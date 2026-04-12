@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Search, Package } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useBusiness } from "@/contexts/BusinessContext";
 
 type ProductWithProfile = Product & {
   business_profiles?: {
@@ -35,6 +36,7 @@ const emptyForm = (defaultProfileId = "") => ({
 export default function ProductsPage() {
   const { data: profiles = [] } = useBusinessProfiles();
   const { data: products = [], isLoading } = useProducts({ activeOnly: false });
+  const { activeBusinessId } = useBusiness();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export default function ProductsPage() {
   }, [products, search]);
 
   const resetForm = () => {
-    setForm(emptyForm(profiles.find((profile) => profile.is_default)?.id ?? profiles[0]?.id ?? ""));
+    setForm(emptyForm(activeBusinessId ?? profiles.find((profile) => profile.is_default)?.id ?? profiles[0]?.id ?? ""));
     setEditId(null);
   };
 

@@ -34,6 +34,7 @@ export type Database = {
           logo_url: string | null
           lut_arn: string | null
           name: string
+          owner_user_id: string | null
           pan: string | null
           phone: string | null
           postal_code: string | null
@@ -64,6 +65,7 @@ export type Database = {
           logo_url?: string | null
           lut_arn?: string | null
           name: string
+          owner_user_id?: string | null
           pan?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -94,6 +96,7 @@ export type Database = {
           logo_url?: string | null
           lut_arn?: string | null
           name?: string
+          owner_user_id?: string | null
           pan?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -106,6 +109,38 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      business_members: {
+        Row: {
+          business_profile_id: string
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          business_profile_id: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          business_profile_id?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_members_business_profile_id_fkey"
+            columns: ["business_profile_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       currencies: {
         Row: {
@@ -142,6 +177,7 @@ export type Database = {
           contact_person: string | null
           country: string | null
           created_at: string | null
+          business_profile_id: string
           email: string | null
           gstin: string | null
           id: string
@@ -160,6 +196,7 @@ export type Database = {
           contact_person?: string | null
           country?: string | null
           created_at?: string | null
+          business_profile_id: string
           email?: string | null
           gstin?: string | null
           id?: string
@@ -178,6 +215,7 @@ export type Database = {
           contact_person?: string | null
           country?: string | null
           created_at?: string | null
+          business_profile_id?: string
           email?: string | null
           gstin?: string | null
           id?: string
@@ -189,7 +227,15 @@ export type Database = {
           state?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_business_profile_id_fkey"
+            columns: ["business_profile_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoice_items: {
         Row: {
@@ -428,6 +474,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       tax_configs: {
         Row: {

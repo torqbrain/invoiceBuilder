@@ -5,6 +5,9 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import AppFooter from "@/components/AppFooter";
+import BusinessSwitcher from "@/components/BusinessSwitcher";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -20,6 +23,7 @@ const navItems = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { signOut } = useAuth();
 
   // Hide sidebar on invoice preview page
   const isPreviewPage = location.pathname.includes("/preview");
@@ -66,7 +70,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
       <main className="flex-1 overflow-auto">
         <div className="min-h-screen flex flex-col">
-          <div className="flex-1 p-6 max-w-7xl mx-auto w-full">{children}</div>
+          <div className="p-6 max-w-7xl mx-auto w-full flex items-center justify-between gap-4 no-print">
+            <BusinessSwitcher />
+            <Button variant="outline" onClick={() => signOut()}>
+              Sign Out
+            </Button>
+          </div>
+          <div className="flex-1 p-6 pt-0 max-w-7xl mx-auto w-full">{children}</div>
           <AppFooter className="no-print px-6 pb-6" />
         </div>
       </main>

@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { SIGNATURE_FONTS, getSignatureFontFamily } from "@/lib/signature-fonts";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
 
 const emptyForm = () => ({
   name: "", address_line1: "", address_line2: "", city: "", state: "", country: "India", postal_code: "",
@@ -24,6 +25,7 @@ const emptyForm = () => ({
 
 export default function BusinessProfilesPage() {
   const { data: profiles = [], isLoading } = useBusinessProfiles();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
@@ -34,9 +36,35 @@ export default function BusinessProfilesPage() {
     if (editId) {
       await supabase.from("business_profiles").update(form).eq("id", editId);
     } else {
-      await supabase.from("business_profiles").insert(form);
+      if (!user) {
+        toast({ title: "You must be signed in", variant: "destructive" });
+        return;
+      }
+
+      const { data: business, error: businessError } = await supabase
+        .from("business_profiles")
+        .insert({ ...form, owner_user_id: user.id })
+        .select("id")
+        .single();
+
+      if (businessError) {
+        toast({ title: "Unable to create business", description: businessError.message, variant: "destructive" });
+        return;
+      }
+
+      const { error: membershipError } = await supabase.from("business_members").insert({
+        user_id: user.id,
+        business_profile_id: business.id,
+        role: "owner",
+      });
+
+      if (membershipError) {
+        toast({ title: "Unable to create business membership", description: membershipError.message, variant: "destructive" });
+        return;
+      }
     }
     qc.invalidateQueries({ queryKey: ["business_profiles"] });
+    qc.invalidateQueries({ queryKey: ["business_memberships"] });
     setOpen(false);
     setForm(emptyForm());
     setEditId(null);

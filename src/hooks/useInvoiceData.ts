@@ -3,23 +3,36 @@ import { supabase } from "@/integrations/supabase/client";
 import type { InvoiceFormData, InvoiceStatus } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
 import { getNextInvoiceNumber as computeNextInvoiceNumber, normalizeInvoicePattern } from "@/lib/invoice-number";
+import { useBusiness } from "@/contexts/BusinessContext";
+import type { BusinessMemberWithBusiness } from "@/lib/types";
 
 export function useBusinessProfiles() {
   return useQuery({
     queryKey: ["business_profiles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("business_profiles").select("*").order("name");
+      const { data, error } = await supabase
+        .from("business_members")
+        .select("*, business_profiles(*)")
+        .order("created_at", { ascending: true });
       if (error) throw error;
-      return data;
+      return ((data ?? []) as BusinessMemberWithBusiness[])
+        .map((membership) => membership.business_profiles)
+        .filter((business) => Boolean(business));
     },
   });
 }
 
 export function useCustomers() {
+  const { activeBusinessId } = useBusiness();
   return useQuery({
-    queryKey: ["customers"],
+    queryKey: ["customers", activeBusinessId],
+    enabled: !!activeBusinessId,
     queryFn: async () => {
-      const { data, error } = await supabase.from("customers").select("*").order("name");
+      const { data, error } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("business_profile_id", activeBusinessId!)
+        .order("name");
       if (error) throw error;
       return data;
     },
@@ -49,8 +62,12 @@ export function useTaxConfigs() {
 }
 
 export function useProducts(options?: { businessProfileId?: string; activeOnly?: boolean }) {
+  const { activeBusinessId } = useBusiness();
+  const scopedBusinessProfileId = options?.businessProfileId ?? activeBusinessId;
+
   return useQuery({
-    queryKey: ["products", options?.businessProfileId ?? "all", options?.activeOnly ?? false],
+    queryKey: ["products", scopedBusinessProfileId ?? "all", options?.activeOnly ?? false],
+    enabled: !!scopedBusinessProfileId,
     queryFn: async () => {
       let query = supabase
         .from("products")
@@ -61,8 +78,8 @@ export function useProducts(options?: { businessProfileId?: string; activeOnly?:
         query = query.eq("is_active", true);
       }
 
-      if (options?.businessProfileId) {
-        query = query.eq("business_profile_id", options.businessProfileId);
+      if (scopedBusinessProfileId) {
+        query = query.eq("business_profile_id", scopedBusinessProfileId);
       }
 
       const { data, error } = await query;
@@ -84,12 +101,15 @@ export function useInvoiceTemplates() {
 }
 
 export function useInvoices(statusFilter?: InvoiceStatus | null) {
+  const { activeBusinessId } = useBusiness();
   return useQuery({
-    queryKey: ["invoices", statusFilter],
+    queryKey: ["invoices", activeBusinessId, statusFilter],
+    enabled: !!activeBusinessId,
     queryFn: async () => {
       let query = supabase
         .from("invoices")
         .select("*, business_profiles(*), customers(*), currencies(*), invoice_templates(*)")
+        .eq("business_profile_id", activeBusinessId!)
         .order("created_at", { ascending: false });
       if (statusFilter) query = query.eq("status", statusFilter);
       const { data, error } = await query;
@@ -100,13 +120,15 @@ export function useInvoices(statusFilter?: InvoiceStatus | null) {
 }
 
 export function useInvoice(id: string | undefined) {
+  const { activeBusinessId } = useBusiness();
   return useQuery({
-    queryKey: ["invoice", id],
-    enabled: !!id,
+    queryKey: ["invoice", activeBusinessId, id],
+    enabled: !!id && !!activeBusinessId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("invoices")
         .select("*, business_profiles(*), customers(*), currencies(*), invoice_templates(*), invoice_items(*)")
+        .eq("business_profile_id", activeBusinessId!)
         .eq("id", id!)
         .single();
       if (error) throw error;

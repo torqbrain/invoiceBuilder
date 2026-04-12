@@ -9,9 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useBusiness } from "@/contexts/BusinessContext";
 
 export default function CustomersPage() {
   const { data: customers = [], isLoading } = useCustomers();
+  const { activeBusinessId } = useBusiness();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -23,11 +25,12 @@ export default function CustomersPage() {
   const resetForm = () => { setForm({ name: "", email: "", phone: "", address_line1: "", city: "", state: "", country: "", postal_code: "", gstin: "", pan: "", contact_person: "" }); setEditId(null); };
 
   const handleSave = async () => {
+    if (!activeBusinessId) { toast({ title: "Select a business first", variant: "destructive" }); return; }
     if (!form.name.trim()) { toast({ title: "Name is required", variant: "destructive" }); return; }
     if (editId) {
       await supabase.from("customers").update(form).eq("id", editId);
     } else {
-      await supabase.from("customers").insert(form);
+      await supabase.from("customers").insert({ ...form, business_profile_id: activeBusinessId });
     }
     qc.invalidateQueries({ queryKey: ["customers"] });
     setOpen(false);
