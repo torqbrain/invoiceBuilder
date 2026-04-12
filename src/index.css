@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Caveat:wght@400;600;700&family=Kalam:wght@300;400;700&family=Satisfy&family=Marck+Script&family=Cedarville+Cursive&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 220 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+    --primary: 215 60% 28%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 95%;
+    --secondary-foreground: 215 60% 28%;
+    --muted: 210 15% 93%;
+    --muted-foreground: 215 10% 46%;
+    --accent: 200 80% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 215 60% 28%;
+    --radius: 0.5rem;
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --sidebar-background: 220 20% 10%;
+    --sidebar-foreground: 210 15% 85%;
+    --sidebar-primary: 200 80% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 18% 16%;
+    --sidebar-accent-foreground: 210 15% 85%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 200 80% 55%;
+    --invoice-header: 215 60% 28%;
+    --invoice-header-foreground: 0 0% 100%;
+    --invoice-accent: 200 80% 45%;
+    --invoice-border: 214 20% 85%;
+    --invoice-muted: 210 15% 96%;
+  }
+
+  .dark {
+    --background: 220 20% 6%;
+    --foreground: 210 15% 93%;
+    --card: 220 18% 10%;
+    --card-foreground: 210 15% 93%;
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 15% 93%;
+    --primary: 200 80% 55%;
+    --primary-foreground: 220 20% 6%;
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 210 15% 93%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 215 10% 55%;
+    --accent: 200 80% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 200 80% 55%;
+    --sidebar-background: 220 22% 8%;
+    --sidebar-foreground: 210 15% 85%;
+    --sidebar-primary: 200 80% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 18% 14%;
+    --sidebar-accent-foreground: 210 15% 85%;
+    --sidebar-border: 220 15% 14%;
+    --sidebar-ring: 200 80% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .invoice-print {
+    @apply bg-card shadow-lg;
+  }
+
+  .signature-ink {
+    color: #1f5fbf;
+  }
+}
+
+@media print {
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .invoice-print {
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
