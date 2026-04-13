@@ -51,7 +51,7 @@ export default function InvoicePreview() {
           <div className="mb-8 flex flex-col gap-6 border-b-2 border-invoice-border pb-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold text-primary">{business?.name || "Company Name"}</h1>
-              <div className="text-sm text-muted-foreground mt-2 space-y-0.5">
+              <div className="mt-2 space-y-0.5 text-sm text-muted-foreground break-words">
                 {business?.address_line1 && <p>{business.address_line1}</p>}
                 {business?.address_line2 && <p>{business.address_line2}</p>}
                 <p>{[business?.city, business?.state, business?.postal_code].filter(Boolean).join(", ")}</p>
@@ -84,17 +84,37 @@ export default function InvoicePreview() {
           </div>
 
           {/* Tax details row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-invoice-muted rounded-lg text-sm">
-            {business?.gstin && <div><span className="text-muted-foreground">{t("gstin")}:</span> <span className="font-medium">{business.gstin}</span></div>}
-            {business?.pan && <div><span className="text-muted-foreground">{t("pan")}:</span> <span className="font-medium">{business.pan}</span></div>}
-            {business?.lut_arn && invoice.is_export && <div><span className="text-muted-foreground">{t("lut_arn", "LUT ARN")}:</span> <span className="font-medium">{business.lut_arn}</span></div>}
-            {invoice.place_of_supply && <div><span className="text-muted-foreground">{t("place_of_supply")}:</span> <span className="font-medium">{invoice.place_of_supply}</span></div>}
+          <div className="mb-6 grid grid-cols-1 gap-3 rounded-lg bg-invoice-muted p-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+            {business?.gstin && (
+              <div className="min-w-0">
+                <div className="text-muted-foreground">{t("gstin")}:</div>
+                <div className="break-all font-medium">{business.gstin}</div>
+              </div>
+            )}
+            {business?.pan && (
+              <div className="min-w-0">
+                <div className="text-muted-foreground">{t("pan")}:</div>
+                <div className="break-all font-medium">{business.pan}</div>
+              </div>
+            )}
+            {business?.lut_arn && invoice.is_export && (
+              <div className="min-w-0">
+                <div className="text-muted-foreground">{t("lut_arn", "LUT ARN")}:</div>
+                <div className="break-all font-medium">{business.lut_arn}</div>
+              </div>
+            )}
+            {invoice.place_of_supply && (
+              <div className="min-w-0">
+                <div className="text-muted-foreground">{t("place_of_supply")}:</div>
+                <div className="break-words font-medium">{invoice.place_of_supply}</div>
+              </div>
+            )}
           </div>
 
           {/* Bill To */}
           <div className="mb-8">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t("bill_to")}</h3>
-            <div className="text-sm">
+            <div className="text-sm break-words">
               <p className="font-semibold text-base">{customer?.name || "—"}</p>
               {customer?.address_line1 && <p>{customer.address_line1}</p>}
               {customer?.address_line2 && <p>{customer.address_line2}</p>}
@@ -106,7 +126,40 @@ export default function InvoicePreview() {
           </div>
 
           {/* Items table */}
-          <div className="mb-8 overflow-x-auto">
+          <div className="mb-8 space-y-3 sm:hidden">
+            {items.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0)).map((item: any, i: number) => (
+              <div key={item.id} className="rounded-lg border p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-sm font-semibold">
+                    {t("sl_no")} {i + 1}
+                  </div>
+                  <div className="text-right text-sm font-semibold">
+                    {symbol}{(item.amount || 0).toLocaleString()}
+                  </div>
+                </div>
+                <div className="mt-3 break-words text-sm font-medium">{item.description}</div>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <div className="text-muted-foreground">{t("hsn_sac")}</div>
+                    <div className="break-all">{item.hsn_sac || "—"}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-muted-foreground">{t("quantity")}</div>
+                    <div>
+                      {item.quantity}
+                      {item.unit ? ` ${item.unit}` : ""}
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="text-muted-foreground">{t("rate")}</div>
+                    <div>{symbol}{(item.rate || 0).toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mb-8 hidden overflow-x-auto sm:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-primary text-primary-foreground">
@@ -137,8 +190,8 @@ export default function InvoicePreview() {
           </div>
 
           {/* Totals */}
-          <div className="flex justify-end mb-8">
-            <div className="w-80">
+          <div className="mb-8 flex justify-end">
+            <div className="w-full sm:w-80">
               <div className="flex justify-between py-2 text-sm">
                 <span className="text-muted-foreground">{t("subtotal")}</span>
                 <span className="font-medium">{symbol}{(invoice.subtotal || 0).toLocaleString()}</span>
@@ -178,7 +231,7 @@ export default function InvoicePreview() {
 
           {/* Bank details */}
           {business?.bank_name && (
-            <div className="mb-6 text-sm">
+            <div className="mb-6 break-words text-sm">
               <h3 className="font-semibold mb-1">{t("bank_details")}</h3>
               <p>{t("bank_name")}: {business.bank_name}</p>
               {business.bank_account && <p>{t("account_no")}: {business.bank_account}</p>}
