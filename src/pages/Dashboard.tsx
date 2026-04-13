@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, Users, Plus, TrendingUp, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { InvoiceWithRelations } from "@/lib/types";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -15,12 +16,47 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-muted text-muted-foreground",
 };
 
+function sumInvoicesByCurrency(
+  invoices: InvoiceWithRelations[],
+  getAmount: (invoice: InvoiceWithRelations) => number
+) {
+  const totals = new Map<string, { symbol: string; total: number }>();
+
+  invoices.forEach((invoice) => {
+    const currencyCode = invoice.currencies?.code || "UNKNOWN";
+    const symbol = invoice.currencies?.symbol || currencyCode;
+    const amount = getAmount(invoice);
+
+    if (amount <= 0) return;
+
+    const current = totals.get(currencyCode);
+    if (current) {
+      current.total += amount;
+    } else {
+      totals.set(currencyCode, { symbol, total: amount });
+    }
+  });
+
+  return Array.from(totals.values());
+}
+
 export default function Dashboard() {
   const { data: invoices = [] } = useInvoices();
   const { data: customers = [] } = useCustomers();
 
-  const totalRevenue = invoices.filter(i => i.status === "paid").reduce((s, i) => s + (i.total_amount || 0), 0);
-  const pendingAmount = invoices.filter(i => ["sent", "partially_paid"].includes(i.status || "")).reduce((s, i) => s + ((i.total_amount || 0) - (i.received_amount || 0)), 0);
+  const receivedInvoices = invoices.filter((invoice) => ["paid", "partially_paid"].includes(invoice.status || ""));
+  const pendingInvoices = invoices.filter((invoice) => ["sent", "partially_paid", "overdue"].includes(invoice.status || ""));
+  const revenueByCurrency = sumInvoicesByCurrency(receivedInvoices, (invoice) => {
+    if (invoice.status === "paid") {
+      return invoice.total_amount || invoice.received_amount || 0;
+    }
+
+    return invoice.received_amount || 0;
+  });
+  const pendingByCurrency = sumInvoicesByCurrency(
+    pendingInvoices,
+    (invoice) => (invoice.total_amount || 0) - (invoice.received_amount || 0)
+  );
   const recentInvoices = invoices.slice(0, 5);
 
   return (
@@ -52,17 +88,41 @@ export default function Dashboard() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Revenue (Paid)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Revenue (Received)</CardTitle>
             <TrendingUp className="h-4 w-4 text-success" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">₹{totalRevenue.toLocaleString()}</div></CardContent>
+          <CardContent>
+            {revenueByCurrency.length === 0 ? (
+              <div className="text-2xl font-bold">0</div>
+            ) : (
+              <div className="space-y-1">
+                {revenueByCurrency.map(({ symbol, total }) => (
+                  <div key={symbol} className="text-2xl font-bold">
+                    {symbol}{total.toLocaleString()}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
             <Clock className="h-4 w-4 text-warning" />
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">₹{pendingAmount.toLocaleString()}</div></CardContent>
+          <CardContent>
+            {pendingByCurrency.length === 0 ? (
+              <div className="text-2xl font-bold">0</div>
+            ) : (
+              <div className="space-y-1">
+                {pendingByCurrency.map(({ symbol, total }) => (
+                  <div key={symbol} className="text-2xl font-bold">
+                    {symbol}{total.toLocaleString()}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
 

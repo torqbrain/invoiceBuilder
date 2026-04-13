@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Save, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   useBusinessProfiles, useCustomers, useCurrencies, useInvoiceTemplates, useProducts,
   useSaveInvoice, useInvoice, useNextInvoiceNumber,
@@ -37,6 +38,7 @@ export default function InvoiceEditor() {
   const navigate = useNavigate();
   const isEdit = !!id;
   const [invoiceNumberTouched, setInvoiceNumberTouched] = useState(false);
+  const [missingDataDialog, setMissingDataDialog] = useState<"business" | "customer" | null>(null);
 
   const { data: profiles = [] } = useBusinessProfiles();
   const { data: customers = [] } = useCustomers();
@@ -230,8 +232,42 @@ export default function InvoiceEditor() {
     navigate(`/invoices/${result}/preview`);
   };
 
+  const missingDataConfig = missingDataDialog === "business"
+    ? {
+        title: "Add a business profile first",
+        description: "You need at least one business profile before creating an invoice.",
+        actionLabel: "Go to Business Profiles",
+        href: "/business-profiles",
+      }
+    : {
+        title: "Add a customer first",
+        description: "You need at least one customer before creating an invoice.",
+        actionLabel: "Go to Customers",
+        href: "/customers",
+      };
+
   return (
     <div className="max-w-5xl space-y-6 animate-fade-in">
+      <Dialog open={!!missingDataDialog} onOpenChange={(open) => !open && setMissingDataDialog(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{missingDataConfig.title}</DialogTitle>
+            <DialogDescription>{missingDataConfig.description}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMissingDataDialog(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                setMissingDataDialog(null);
+                navigate(missingDataConfig.href);
+              }}
+            >
+              {missingDataConfig.actionLabel}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{isEdit ? "Edit Invoice" : "New Invoice"}</h1>
@@ -285,21 +321,43 @@ export default function InvoiceEditor() {
           <CardContent className="space-y-3">
             <div>
               <Label className="text-xs">Business Profile</Label>
-              <Select value={form.business_profile_id} onValueChange={(v) => setForm({ ...form, business_profile_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select business..." /></SelectTrigger>
-                <SelectContent>
-                  {profiles.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {profiles.length > 0 ? (
+                <Select value={form.business_profile_id} onValueChange={(v) => setForm({ ...form, business_profile_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select business..." /></SelectTrigger>
+                  <SelectContent>
+                    {profiles.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-auto w-full justify-start py-3 text-left font-normal text-muted-foreground"
+                  onClick={() => setMissingDataDialog("business")}
+                >
+                  No business profiles yet. Tap to create one.
+                </Button>
+              )}
             </div>
             <div>
               <Label className="text-xs">Customer</Label>
-              <Select value={form.customer_id} onValueChange={(v) => setForm({ ...form, customer_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select customer..." /></SelectTrigger>
-                <SelectContent>
-                  {customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {customers.length > 0 ? (
+                <Select value={form.customer_id} onValueChange={(v) => setForm({ ...form, customer_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select customer..." /></SelectTrigger>
+                  <SelectContent>
+                    {customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-auto w-full justify-start py-3 text-left font-normal text-muted-foreground"
+                  onClick={() => setMissingDataDialog("customer")}
+                >
+                  No customers yet. Tap to create one.
+                </Button>
+              )}
             </div>
             <div>
               <Label className="text-xs">Place of Supply</Label>
