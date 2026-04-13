@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Eye, Edit, Trash2, Copy } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type { InvoiceStatus } from "@/lib/types";
+import { formatInvoiceStatus } from "@/lib/invoice-status";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -77,7 +78,9 @@ export default function InvoiceList() {
                     <div className="font-medium">{inv.invoice_number}</div>
                     <div className="mt-1 text-sm text-muted-foreground">{(inv as any).customers?.name || "—"}</div>
                   </div>
-                  <Badge variant="secondary" className={statusColors[inv.status || "draft"]}>{inv.status}</Badge>
+                  <Badge variant="secondary" className={statusColors[inv.status || "draft"]}>
+                    {formatInvoiceStatus(inv.status)}
+                  </Badge>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <div>
@@ -123,7 +126,9 @@ export default function InvoiceList() {
                     {(inv as any).currencies?.symbol || "₹"}{(inv.total_amount || 0).toLocaleString()}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <Badge variant="secondary" className={statusColors[inv.status || "draft"]}>{inv.status}</Badge>
+                    <Badge variant="secondary" className={statusColors[inv.status || "draft"]}>
+                      {formatInvoiceStatus(inv.status)}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-1">

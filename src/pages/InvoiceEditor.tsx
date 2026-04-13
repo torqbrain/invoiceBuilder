@@ -38,6 +38,7 @@ export default function InvoiceEditor() {
   const navigate = useNavigate();
   const isEdit = !!id;
   const [invoiceNumberTouched, setInvoiceNumberTouched] = useState(false);
+  const [statusTouched, setStatusTouched] = useState(false);
   const [missingDataDialog, setMissingDataDialog] = useState<"business" | "customer" | null>(null);
 
   const { data: profiles = [] } = useBusinessProfiles();
@@ -107,6 +108,7 @@ export default function InvoiceEditor() {
         items: items.length > 0 ? items : [emptyItem()],
         tax_ids: [],
       });
+      setStatusTouched(!duplicateId);
     } else if (!isEdit) {
       setForm((f) => ({
         ...f,
@@ -118,6 +120,7 @@ export default function InvoiceEditor() {
           profiles[0]?.default_terms_and_conditions ||
           LEGACY_DEFAULT_TERMS,
       }));
+      setStatusTouched(false);
     }
   }, [existingInvoice, nextNumber, profiles, templates, currencies, isEdit, duplicateId]);
 
@@ -210,7 +213,20 @@ export default function InvoiceEditor() {
     ));
   }, [form.status, total]);
 
+  const getStatusFromReceivedAmount = (receivedAmount: number, currentStatus: InvoiceStatus) => {
+    if (receivedAmount <= 0) {
+      return currentStatus === "partially_paid" || currentStatus === "paid" ? "draft" : currentStatus;
+    }
+
+    if (total > 0 && receivedAmount >= total) {
+      return "paid";
+    }
+
+    return "partially_paid";
+  };
+
   const handleStatusChange = (status: InvoiceStatus) => {
+    setStatusTouched(true);
     setForm((current) => ({
       ...current,
       status,
@@ -218,10 +234,23 @@ export default function InvoiceEditor() {
     }));
   };
 
+  const handleReceivedAmountChange = (value: string) => {
+    const receivedAmount = parseFloat(value) || 0;
+
+    setForm((current) => ({
+      ...current,
+      received_amount: receivedAmount,
+      status: !statusTouched
+        ? getStatusFromReceivedAmount(receivedAmount, current.status)
+        : current.status,
+    }));
+  };
+
   const handleSave = async (status?: InvoiceStatus) => {
     const resolvedStatus = status || form.status;
     const data = {
       ...form,
+      due_date: form.due_date || null,
       status: resolvedStatus,
       received_amount: resolvedStatus === "paid" ? total : form.received_amount,
       amount_in_words: numberToWords(total, selectedCurrency?.name || "Rupees"),
@@ -299,7 +328,7 @@ export default function InvoiceEditor() {
               <Input type="date" value={form.invoice_date} onChange={(e) => setForm({ ...form, invoice_date: e.target.value })} />
             </div>
             <div>
-              <Label className="text-xs">Due Date</Label>
+              <Label className="text-xs">Due Date (Optional)</Label>
               <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
             </div>
             <div>
@@ -506,7 +535,7 @@ export default function InvoiceEditor() {
               <div className="flex justify-between border-t pt-2 text-base font-bold"><span>Total</span><span>{selectedCurrency?.symbol || "₹"}{total.toLocaleString()}</span></div>
               <div className="pt-2">
                 <Label className="text-xs">Received Amount</Label>
-                <Input type="number" value={form.received_amount} onChange={(e) => setForm({ ...form, received_amount: parseFloat(e.target.value) || 0 })} />
+                <Input type="number" value={form.received_amount} onChange={(e) => handleReceivedAmountChange(e.target.value)} />
               </div>
               <div className="flex justify-between text-base font-bold text-accent"><span>Balance Due</span><span>{selectedCurrency?.symbol || "₹"}{balanceDue.toLocaleString()}</span></div>
             </div>

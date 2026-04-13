@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Users, Plus, TrendingUp, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { InvoiceWithRelations } from "@/lib/types";
+import { formatInvoiceStatus } from "@/lib/invoice-status";
 
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -57,7 +58,7 @@ export default function Dashboard() {
     pendingInvoices,
     (invoice) => (invoice.total_amount || 0) - (invoice.received_amount || 0)
   );
-  const recentInvoices = invoices.slice(0, 5);
+  const allInvoices = invoices;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -128,14 +129,14 @@ export default function Dashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Recent Invoices</CardTitle>
+          <CardTitle className="text-lg">All Invoices</CardTitle>
         </CardHeader>
         <CardContent>
-          {recentInvoices.length === 0 ? (
+          {allInvoices.length === 0 ? (
             <p className="text-muted-foreground text-sm py-4 text-center">No invoices yet. Create your first invoice!</p>
           ) : (
             <div className="space-y-3">
-              {recentInvoices.map((inv) => (
+              {allInvoices.map((inv) => (
                 <Link
                   key={inv.id}
                   to={`/invoices/${inv.id}/preview`}
@@ -152,7 +153,7 @@ export default function Dashboard() {
                       {(inv as any).currencies?.symbol || "₹"}{(inv.total_amount || 0).toLocaleString()}
                     </span>
                     <Badge variant="secondary" className={statusColors[inv.status || "draft"]}>
-                      {inv.status}
+                      {formatInvoiceStatus(inv.status)}
                     </Badge>
                   </div>
                 </Link>
