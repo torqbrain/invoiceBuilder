@@ -25,13 +25,13 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm">Overview of your invoicing activity</p>
         </div>
         <Link to="/invoices/new">
-          <Button><Plus className="h-4 w-4 mr-2" />New Invoice</Button>
+          <Button className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" />New Invoice</Button>
         </Link>
       </div>
 
@@ -79,7 +79,7 @@ export default function Dashboard() {
                 <Link
                   key={inv.id}
                   to={`/invoices/${inv.id}/preview`}
-                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                  className="flex flex-col gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <div>
@@ -87,7 +87,7 @@ export default function Dashboard() {
                       <p className="text-xs text-muted-foreground">{(inv as any).customers?.name || "—"}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <span className="text-sm font-medium">
                       {(inv as any).currencies?.symbol || "₹"}{(inv.total_amount || 0).toLocaleString()}
                     </span>

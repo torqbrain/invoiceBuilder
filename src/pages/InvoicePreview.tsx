@@ -30,11 +30,11 @@ export default function InvoicePreview() {
     <div dir={isRtl ? "rtl" : "ltr"}>
       {/* Toolbar */}
       <div className="no-print bg-background border-b sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between px-6 py-3">
+        <div className="mx-auto flex max-w-4xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <Link to="/invoices">
             <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>
           </Link>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link to={`/invoices/${id}/edit`}>
               <Button variant="outline" size="sm"><Edit className="h-4 w-4 mr-2" />Edit</Button>
             </Link>
@@ -45,10 +45,10 @@ export default function InvoicePreview() {
       </div>
 
       {/* Invoice */}
-      <div className="max-w-4xl mx-auto py-8 px-6">
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="invoice-print bg-card rounded-lg border p-8 md:p-12">
           {/* Header */}
-          <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-invoice-border">
+          <div className="mb-8 flex flex-col gap-6 border-b-2 border-invoice-border pb-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold text-primary">{business?.name || "Company Name"}</h1>
               <div className="text-sm text-muted-foreground mt-2 space-y-0.5">
@@ -60,21 +60,21 @@ export default function InvoicePreview() {
                 {business?.email && <p>{business.email}</p>}
               </div>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <h2 className="text-xl font-bold text-invoice-accent uppercase tracking-wider">
                 {invoice.is_export ? t("export_invoice", "EXPORT INVOICE") : t("tax_invoice", "TAX INVOICE")}
               </h2>
               <div className="mt-3 space-y-1 text-sm">
-                <div className="flex justify-end gap-4">
+                <div className="flex justify-between gap-4 sm:justify-end">
                   <span className="text-muted-foreground">{t("invoice_no")}:</span>
                   <span className="font-semibold">{invoice.invoice_number}</span>
                 </div>
-                <div className="flex justify-end gap-4">
+                <div className="flex justify-between gap-4 sm:justify-end">
                   <span className="text-muted-foreground">{t("invoice_date")}:</span>
                   <span>{new Date(invoice.invoice_date).toLocaleDateString()}</span>
                 </div>
                 {invoice.due_date && (
-                  <div className="flex justify-end gap-4">
+                  <div className="flex justify-between gap-4 sm:justify-end">
                     <span className="text-muted-foreground">{t("due_date")}:</span>
                     <span>{new Date(invoice.due_date).toLocaleDateString()}</span>
                   </div>
@@ -196,7 +196,7 @@ export default function InvoicePreview() {
           )}
 
           {/* Footer */}
-          <div className="flex justify-between items-end pt-6 border-t">
+          <div className="flex flex-col gap-6 border-t pt-6 sm:flex-row sm:items-end sm:justify-between">
             <p className="text-sm text-muted-foreground italic">{t("thank_you")}</p>
             <div className="text-center">
               {business?.signature_text ? (

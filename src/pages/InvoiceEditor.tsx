@@ -231,15 +231,15 @@ export default function InvoiceEditor() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-5xl">
-      <div className="flex items-center justify-between">
+    <div className="max-w-5xl space-y-6 animate-fade-in">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{isEdit ? "Edit Invoice" : "New Invoice"}</h1>
           <p className="text-muted-foreground text-sm">Fill in the invoice details below</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleSave("draft")}><Save className="h-4 w-4 mr-2" />Save Draft</Button>
-          <Button onClick={() => handleSave()}><Eye className="h-4 w-4 mr-2" />Save & Preview</Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button variant="outline" onClick={() => handleSave("draft")} className="w-full sm:w-auto"><Save className="h-4 w-4 mr-2" />Save Draft</Button>
+          <Button onClick={() => handleSave()} className="w-full sm:w-auto"><Eye className="h-4 w-4 mr-2" />Save & Preview</Button>
         </div>
       </div>
 
@@ -349,14 +349,14 @@ export default function InvoiceEditor() {
       {/* Line items */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-sm">Line Items</CardTitle>
-            <Button variant="outline" size="sm" onClick={addItem}><Plus className="h-3 w-3 mr-1" />Add Item</Button>
+            <Button variant="outline" size="sm" onClick={addItem} className="w-full sm:w-auto"><Plus className="h-3 w-3 mr-1" />Add Item</Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-1">
+            <div className="hidden grid-cols-12 gap-2 px-1 text-xs font-medium text-muted-foreground lg:grid">
               <div className="col-span-3">Product</div>
               <div className="col-span-3">Description</div>
               <div className="col-span-1">HSN/SAC</div>
@@ -367,35 +367,72 @@ export default function InvoiceEditor() {
               <div className="col-span-1"></div>
             </div>
             {form.items.map((item, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 items-center">
-                <Select value={item.product_id || "custom"} onValueChange={(value) => handleProductSelect(i, value)}>
-                  <SelectTrigger className="col-span-3 text-sm">
-                    <SelectValue placeholder="Select product" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="custom">Custom line item</SelectItem>
-                    {(products as Product[]).map((product) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        {product.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input className="col-span-3 text-sm" placeholder="Service/item description" value={item.description} onChange={(e) => updateItem(i, "description", e.target.value)} />
-                <Input className="col-span-1 text-sm" placeholder="HSN" value={item.hsn_sac} onChange={(e) => updateItem(i, "hsn_sac", e.target.value)} />
-                <Input className="col-span-1 text-sm" type="number" value={item.quantity} onChange={(e) => updateItem(i, "quantity", parseFloat(e.target.value) || 0)} />
-                <Input
-                  className="col-span-1 text-sm"
-                  list="invoice-unit-suggestions"
-                  value={item.unit}
-                  onChange={(e) => updateItem(i, "unit", e.target.value)}
-                  placeholder="Unit"
-                />
-                <Input className="col-span-1 text-sm" type="number" value={item.rate} onChange={(e) => updateItem(i, "rate", parseFloat(e.target.value) || 0)} />
-                <div className="col-span-1 text-right text-sm font-medium">{item.amount.toLocaleString()}</div>
-                <Button variant="ghost" size="icon" className="col-span-1" onClick={() => removeItem(i)} disabled={form.items.length === 1}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
+              <div key={i} className="rounded-lg border p-3 lg:rounded-none lg:border-0 lg:p-0">
+                <div className="mb-3 flex items-center justify-between lg:hidden">
+                  <div className="text-sm font-medium">Item {i + 1}</div>
+                  <Button variant="ghost" size="icon" onClick={() => removeItem(i)} disabled={form.items.length === 1}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-12 lg:items-center lg:gap-2">
+                  <div className="space-y-1 lg:col-span-3">
+                    <Label className="text-xs lg:hidden">Product</Label>
+                    <Select value={item.product_id || "custom"} onValueChange={(value) => handleProductSelect(i, value)}>
+                      <SelectTrigger className="text-sm">
+                        <SelectValue placeholder="Select product" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="custom">Custom line item</SelectItem>
+                        {(products as Product[]).map((product) => (
+                          <SelectItem key={product.id} value={product.id}>
+                            {product.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1 lg:col-span-3">
+                    <Label className="text-xs lg:hidden">Description</Label>
+                    <Input className="text-sm" placeholder="Service/item description" value={item.description} onChange={(e) => updateItem(i, "description", e.target.value)} />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:col-span-5 lg:grid-cols-5 lg:gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs lg:hidden">HSN/SAC</Label>
+                      <Input className="text-sm" placeholder="HSN" value={item.hsn_sac} onChange={(e) => updateItem(i, "hsn_sac", e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs lg:hidden">Qty</Label>
+                      <Input className="text-sm" type="number" value={item.quantity} onChange={(e) => updateItem(i, "quantity", parseFloat(e.target.value) || 0)} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs lg:hidden">Unit</Label>
+                      <Input
+                        className="text-sm"
+                        list="invoice-unit-suggestions"
+                        value={item.unit}
+                        onChange={(e) => updateItem(i, "unit", e.target.value)}
+                        placeholder="Unit"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs lg:hidden">Rate</Label>
+                      <Input className="text-sm" type="number" value={item.rate} onChange={(e) => updateItem(i, "rate", parseFloat(e.target.value) || 0)} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs lg:hidden">Amount</Label>
+                      <div className="flex h-10 items-center justify-end rounded-md border bg-muted/40 px-3 text-sm font-medium">
+                        {item.amount.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button variant="ghost" size="icon" className="hidden lg:flex lg:col-span-1" onClick={() => removeItem(i)} disabled={form.items.length === 1}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             ))}
             <datalist id="invoice-unit-suggestions">
@@ -406,7 +443,7 @@ export default function InvoiceEditor() {
           </div>
 
           <div className="mt-6 flex justify-end">
-            <div className="w-72 space-y-2 text-sm">
+            <div className="w-full space-y-2 text-sm sm:w-72">
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">{selectedCurrency?.symbol || "₹"}{subtotal.toLocaleString()}</span></div>
               <div className="flex justify-between border-t pt-2 text-base font-bold"><span>Total</span><span>{selectedCurrency?.symbol || "₹"}{total.toLocaleString()}</span></div>
               <div className="pt-2">

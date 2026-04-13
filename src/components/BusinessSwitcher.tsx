@@ -8,7 +8,7 @@ export default function BusinessSwitcher() {
 
   return (
     <Select value={activeBusinessId} onValueChange={setActiveBusinessId}>
-      <SelectTrigger className="w-64">
+      <SelectTrigger className="w-full sm:w-64">
         <SelectValue placeholder="Select business" />
       </SelectTrigger>
       <SelectContent>

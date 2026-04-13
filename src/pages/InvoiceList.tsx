@@ -34,23 +34,23 @@ export default function InvoiceList() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
           <p className="text-muted-foreground text-sm">{invoices.length} invoices total</p>
         </div>
         <Link to="/invoices/new">
-          <Button><Plus className="h-4 w-4 mr-2" />New Invoice</Button>
+          <Button className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" />New Invoice</Button>
         </Link>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search invoices..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
@@ -68,7 +68,40 @@ export default function InvoiceList() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">No invoices found</div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <>
+          <div className="space-y-3 md:hidden">
+            {filtered.map((inv) => (
+              <div key={inv.id} className="rounded-lg border p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium">{inv.invoice_number}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">{(inv as any).customers?.name || "—"}</div>
+                  </div>
+                  <Badge variant="secondary" className={statusColors[inv.status || "draft"]}>{inv.status}</Badge>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <div className="text-muted-foreground">Date</div>
+                    <div>{new Date(inv.invoice_date).toLocaleDateString()}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-muted-foreground">Amount</div>
+                    <div className="font-medium">
+                      {(inv as any).currencies?.symbol || "₹"}{(inv.total_amount || 0).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap justify-end gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => navigate(`/invoices/${inv.id}/preview`)}><Eye className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => navigate(`/invoices/${inv.id}/edit`)}><Edit className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => navigate(`/invoices/new?duplicate=${inv.id}`)}><Copy className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => { if (confirm("Delete this invoice?")) deleteMutation.mutate(inv.id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-lg border md:block">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
@@ -104,7 +137,8 @@ export default function InvoiceList() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
