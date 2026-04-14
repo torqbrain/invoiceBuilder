@@ -23,8 +23,8 @@ export default function TranslationsPage() {
           return (
             <Card key={t.id}>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Globe className="h-4 w-4 text-accent" />
                     <CardTitle className="text-base">{t.language_name}</CardTitle>
                     <Badge variant="secondary" className="text-xs">{t.language_code}</Badge>
@@ -34,9 +34,9 @@ export default function TranslationsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+                <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {keys.slice(0, 12).map((key) => (
-                    <div key={key} className="p-2 bg-muted/50 rounded">
+                    <div key={key} className="rounded bg-muted/50 p-2 break-words">
                       <span className="text-muted-foreground">{key}:</span>{" "}
                       <span className="font-medium">{map[key]}</span>
                     </div>

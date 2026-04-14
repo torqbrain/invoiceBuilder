@@ -88,36 +88,36 @@ export default function BusinessProfilesPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Business Profiles</h1>
           <p className="text-muted-foreground text-sm">Manage your company details</p>
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setForm(emptyForm()); setEditId(null); } }}>
           <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" />Add Profile</Button>
+            <Button className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" />Add Profile</Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editId ? "Edit" : "Add"} Business Profile</DialogTitle></DialogHeader>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2"><Label className="text-xs">Company Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">Address Line 1</Label><Input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">Address Line 2</Label><Input value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} /></div>
-              <div><Label className="text-xs">City</Label><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
-              <div><Label className="text-xs">State</Label><Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
-              <div><Label className="text-xs">Country</Label><Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} /></div>
-              <div><Label className="text-xs">Postal Code</Label><Input value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></div>
-              <div><Label className="text-xs">Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-              <div><Label className="text-xs">Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">Website</Label><Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
-              <div><Label className="text-xs">GSTIN</Label><Input value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value })} /></div>
-              <div><Label className="text-xs">PAN</Label><Input value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">LUT ARN</Label><Input value={form.lut_arn} onChange={(e) => setForm({ ...form, lut_arn: e.target.value })} /></div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="col-span-2"><Label className="text-xs">Company Name *</Label><Input placeholder="HR IT Services Pvt Ltd" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Address Line 1</Label><Input placeholder="402, Shivalik Heights" value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Address Line 2</Label><Input placeholder="Near Commerce Six Roads" value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} /></div>
+              <div><Label className="text-xs">City</Label><Input placeholder="Ahmedabad" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
+              <div><Label className="text-xs">State</Label><Input placeholder="Gujarat" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
+              <div><Label className="text-xs">Country</Label><Input placeholder="India" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} /></div>
+              <div><Label className="text-xs">Postal Code</Label><Input placeholder="380009" value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></div>
+              <div><Label className="text-xs">Phone</Label><Input placeholder="+91 98765 43210" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+              <div><Label className="text-xs">Email</Label><Input placeholder="billing@yourcompany.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Website</Label><Input placeholder="https://www.yourcompany.com" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
+              <div><Label className="text-xs">GSTIN</Label><Input placeholder="24BRGPA5729L1Z8" value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value })} /></div>
+              <div><Label className="text-xs">PAN</Label><Input placeholder="BRGPA5729L" value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">LUT ARN</Label><Input placeholder="AD2404260152695" value={form.lut_arn} onChange={(e) => setForm({ ...form, lut_arn: e.target.value })} /></div>
               <div className="col-span-2 font-medium text-sm mt-2">Bank Details</div>
-              <div><Label className="text-xs">Bank Name</Label><Input value={form.bank_name} onChange={(e) => setForm({ ...form, bank_name: e.target.value })} /></div>
-              <div><Label className="text-xs">Account No.</Label><Input value={form.bank_account} onChange={(e) => setForm({ ...form, bank_account: e.target.value })} /></div>
-              <div><Label className="text-xs">IFSC</Label><Input value={form.bank_ifsc} onChange={(e) => setForm({ ...form, bank_ifsc: e.target.value })} /></div>
-              <div><Label className="text-xs">SWIFT</Label><Input value={form.bank_swift} onChange={(e) => setForm({ ...form, bank_swift: e.target.value })} /></div>
+              <div><Label className="text-xs">Bank Name</Label><Input placeholder="HDFC Bank" value={form.bank_name} onChange={(e) => setForm({ ...form, bank_name: e.target.value })} /></div>
+              <div><Label className="text-xs">Account No.</Label><Input placeholder="50100234567890" value={form.bank_account} onChange={(e) => setForm({ ...form, bank_account: e.target.value })} /></div>
+              <div><Label className="text-xs">IFSC</Label><Input placeholder="HDFC0001234" value={form.bank_ifsc} onChange={(e) => setForm({ ...form, bank_ifsc: e.target.value })} /></div>
+              <div><Label className="text-xs">SWIFT</Label><Input placeholder="HDFCINBBXXX" value={form.bank_swift} onChange={(e) => setForm({ ...form, bank_swift: e.target.value })} /></div>
               <div className="col-span-2 font-medium text-sm mt-2">Invoice Defaults</div>
               <div className="col-span-2">
                 <Label className="text-xs">Invoice Number Pattern</Label>
@@ -178,18 +178,18 @@ export default function BusinessProfilesPage() {
         <div className="grid gap-3">
           {profiles.map((p) => (
             <Card key={p.id}>
-              <CardContent className="flex items-center justify-between py-4">
-                <div className="flex items-center gap-3">
-                  <Building2 className="h-8 w-8 text-primary/40" />
-                  <div>
-                    <div className="flex items-center gap-2">
+              <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                  <Building2 className="h-8 w-8 shrink-0 text-primary/40" />
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium">{p.name}</p>
                       {p.is_default && <Badge variant="secondary" className="text-xs">Default</Badge>}
                     </div>
-                    <p className="text-sm text-muted-foreground">{[p.city, p.state].filter(Boolean).join(", ")}</p>
-                    {p.gstin && <p className="text-xs text-muted-foreground">GSTIN: {p.gstin}</p>}
+                    <p className="break-words text-sm text-muted-foreground">{[p.city, p.state].filter(Boolean).join(", ")}</p>
+                    {p.gstin && <p className="break-all text-xs text-muted-foreground">GSTIN: {p.gstin}</p>}
                     {p.invoice_number_pattern && (
-                      <p className="text-xs text-muted-foreground">Invoice Pattern: {p.invoice_number_pattern}</p>
+                      <p className="break-words text-xs text-muted-foreground">Invoice Pattern: {p.invoice_number_pattern}</p>
                     )}
                     {p.signature_text && (
                       <p
@@ -201,7 +201,7 @@ export default function BusinessProfilesPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex justify-end gap-1">
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(p)}><Edit className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>

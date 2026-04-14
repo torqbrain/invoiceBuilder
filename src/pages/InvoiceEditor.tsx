@@ -40,9 +40,9 @@ export default function InvoiceEditor() {
   const [invoiceNumberTouched, setInvoiceNumberTouched] = useState(false);
   const [statusTouched, setStatusTouched] = useState(false);
   const [missingDataDialog, setMissingDataDialog] = useState<"business" | "customer" | null>(null);
+  const [lastScopedBusinessId, setLastScopedBusinessId] = useState<string | null>(null);
 
   const { data: profiles = [] } = useBusinessProfiles();
-  const { data: customers = [] } = useCustomers();
   const { data: currencies = [] } = useCurrencies();
   const { data: templates = [] } = useInvoiceTemplates();
   const { data: languages = [] } = useAllTranslations();
@@ -68,6 +68,7 @@ export default function InvoiceEditor() {
     tax_ids: [],
   });
 
+  const { data: customers = [] } = useCustomers({ businessProfileId: form.business_profile_id || undefined });
   const { data: products = [] } = useProducts({
     businessProfileId: form.business_profile_id || undefined,
     activeOnly: true,
@@ -112,10 +113,11 @@ export default function InvoiceEditor() {
     } else if (!isEdit) {
       setForm((f) => ({
         ...f,
-        business_profile_id: profiles.find((p) => p.is_default)?.id || profiles[0]?.id || "",
-        template_id: templates.find((t) => t.is_default)?.id || templates[0]?.id || "",
-        currency_id: currencies.find((c) => c.code === "INR")?.id || currencies[0]?.id || "",
+        business_profile_id: f.business_profile_id || profiles.find((p) => p.is_default)?.id || profiles[0]?.id || "",
+        template_id: f.template_id || templates.find((t) => t.is_default)?.id || templates[0]?.id || "",
+        currency_id: f.currency_id || currencies.find((c) => c.code === "INR")?.id || currencies[0]?.id || "",
         terms_and_conditions:
+          f.terms_and_conditions ||
           profiles.find((p) => p.is_default)?.default_terms_and_conditions ||
           profiles[0]?.default_terms_and_conditions ||
           LEGACY_DEFAULT_TERMS,
@@ -152,6 +154,65 @@ export default function InvoiceEditor() {
         : current
     ));
   }, [nextNumber, isEdit, invoiceNumberTouched]);
+
+  useEffect(() => {
+    const currentBusinessId = form.business_profile_id || null;
+
+    if (!currentBusinessId) {
+      setLastScopedBusinessId(null);
+      return;
+    }
+
+    if (lastScopedBusinessId === null) {
+      setLastScopedBusinessId(currentBusinessId);
+      return;
+    }
+
+    if (lastScopedBusinessId === currentBusinessId) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      customer_id: "",
+      items: current.items.map((item) => ({
+        ...item,
+        product_id: undefined,
+      })),
+    }));
+    setLastScopedBusinessId(currentBusinessId);
+  }, [form.business_profile_id, lastScopedBusinessId]);
+
+  useEffect(() => {
+    if (!form.customer_id) return;
+    if (customers.some((customer) => customer.id === form.customer_id)) return;
+
+    setForm((current) => ({
+      ...current,
+      customer_id: "",
+    }));
+  }, [customers, form.customer_id]);
+
+  useEffect(() => {
+    const availableProductIds = new Set((products as Product[]).map((product) => product.id));
+
+    setForm((current) => {
+      let changed = false;
+      const items = current.items.map((item) => {
+        if (!item.product_id || availableProductIds.has(item.product_id)) {
+          return item;
+        }
+
+        changed = true;
+        return {
+          ...item,
+          product_id: undefined,
+        };
+      });
+
+      return changed ? { ...current, items } : current;
+    });
+  }, [products]);
 
   const updateItem = (index: number, field: keyof InvoiceItemFormData, value: any) => {
     setForm((f) => {
@@ -316,6 +377,7 @@ export default function InvoiceEditor() {
             <div>
               <Label className="text-xs">Invoice Number</Label>
               <Input
+                placeholder="INV-0001"
                 value={form.invoice_number}
                 onChange={(e) => {
                   setInvoiceNumberTouched(true);
@@ -482,31 +544,49 @@ export default function InvoiceEditor() {
 
                   <div className="space-y-1 lg:col-span-3">
                     <Label className="text-xs lg:hidden">Description</Label>
-                    <Input className="text-sm" placeholder="Service/item description" value={item.description} onChange={(e) => updateItem(i, "description", e.target.value)} />
+                    <Input className="text-sm" placeholder="Website redesign retainer" value={item.description} onChange={(e) => updateItem(i, "description", e.target.value)} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:col-span-5 lg:grid-cols-5 lg:gap-2">
                     <div className="space-y-1">
                       <Label className="text-xs lg:hidden">HSN/SAC</Label>
-                      <Input className="text-sm" placeholder="HSN" value={item.hsn_sac} onChange={(e) => updateItem(i, "hsn_sac", e.target.value)} />
+                      <Input className="text-sm" placeholder="998314" value={item.hsn_sac} onChange={(e) => updateItem(i, "hsn_sac", e.target.value)} />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs lg:hidden">Qty</Label>
-                      <Input className="text-sm" type="number" value={item.quantity} onChange={(e) => updateItem(i, "quantity", parseFloat(e.target.value) || 0)} />
+                      <Input className="text-sm" type="number" placeholder="1" value={item.quantity} onChange={(e) => updateItem(i, "quantity", parseFloat(e.target.value) || 0)} />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs lg:hidden">Unit</Label>
-                      <Input
-                        className="text-sm"
-                        list="invoice-unit-suggestions"
+                      <select
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:hidden"
                         value={item.unit}
                         onChange={(e) => updateItem(i, "unit", e.target.value)}
-                        placeholder="Unit"
-                      />
+                      >
+                        {COMMON_UNITS.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="hidden sm:block">
+                        <Select value={item.unit} onValueChange={(value) => updateItem(i, "unit", value)}>
+                          <SelectTrigger className="text-sm">
+                            <SelectValue placeholder="Select unit" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COMMON_UNITS.map((unit) => (
+                              <SelectItem key={unit} value={unit}>
+                                {unit}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs lg:hidden">Rate</Label>
-                      <Input className="text-sm" type="number" value={item.rate} onChange={(e) => updateItem(i, "rate", parseFloat(e.target.value) || 0)} />
+                      <Input className="text-sm" type="number" placeholder="0" value={item.rate} onChange={(e) => updateItem(i, "rate", parseFloat(e.target.value) || 0)} />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs lg:hidden">Amount</Label>
@@ -522,11 +602,6 @@ export default function InvoiceEditor() {
                 </div>
               </div>
             ))}
-            <datalist id="invoice-unit-suggestions">
-              {COMMON_UNITS.map((unit) => (
-                <option key={unit} value={unit} />
-              ))}
-            </datalist>
           </div>
 
           <div className="mt-6 flex justify-end">
@@ -535,7 +610,7 @@ export default function InvoiceEditor() {
               <div className="flex justify-between border-t pt-2 text-base font-bold"><span>Total</span><span>{selectedCurrency?.symbol || "₹"}{total.toLocaleString()}</span></div>
               <div className="pt-2">
                 <Label className="text-xs">Received Amount</Label>
-                <Input type="number" value={form.received_amount} onChange={(e) => handleReceivedAmountChange(e.target.value)} />
+                <Input type="number" placeholder="0" value={form.received_amount} onChange={(e) => handleReceivedAmountChange(e.target.value)} />
               </div>
               <div className="flex justify-between text-base font-bold text-accent"><span>Balance Due</span><span>{selectedCurrency?.symbol || "₹"}{balanceDue.toLocaleString()}</span></div>
             </div>
@@ -548,13 +623,13 @@ export default function InvoiceEditor() {
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-sm">Notes</CardTitle></CardHeader>
           <CardContent>
-            <Textarea rows={4} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Additional notes..." />
+            <Textarea rows={4} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Bank transfer within 7 days. Thank you for your business." />
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-sm">Terms & Conditions</CardTitle></CardHeader>
           <CardContent>
-            <Textarea rows={4} value={form.terms_and_conditions} onChange={(e) => setForm({ ...form, terms_and_conditions: e.target.value })} />
+            <Textarea rows={4} value={form.terms_and_conditions} onChange={(e) => setForm({ ...form, terms_and_conditions: e.target.value })} placeholder="1. Payment due within 15 days.&#10;2. Please mention the invoice number in the payment reference." />
           </CardContent>
         </Card>
       </div>

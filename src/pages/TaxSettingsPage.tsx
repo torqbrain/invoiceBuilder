@@ -18,12 +18,12 @@ export default function TaxSettingsPage() {
         <CardContent>
           <div className="space-y-2">
             {taxes.map((t) => (
-              <div key={t.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                <div>
+              <div key={t.id} className="flex flex-col gap-3 rounded-lg bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <p className="font-medium text-sm">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.label}</p>
+                  <p className="break-words text-xs text-muted-foreground">{t.label}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">{t.rate}%</Badge>
                   {t.is_active && <Badge className="bg-success/10 text-success">Active</Badge>}
                 </div>

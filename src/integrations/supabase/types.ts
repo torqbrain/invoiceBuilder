@@ -321,6 +321,60 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_movements: {
+        Row: {
+          business_profile_id: string
+          created_at: string
+          id: string
+          movement_type: string
+          notes: string | null
+          product_id: string
+          quantity_change: number
+          reference_id: string | null
+          reference_type: string | null
+          unit_cost: number | null
+        }
+        Insert: {
+          business_profile_id: string
+          created_at?: string
+          id?: string
+          movement_type: string
+          notes?: string | null
+          product_id: string
+          quantity_change: number
+          reference_id?: string | null
+          reference_type?: string | null
+          unit_cost?: number | null
+        }
+        Update: {
+          business_profile_id?: string
+          created_at?: string
+          id?: string
+          movement_type?: string
+          notes?: string | null
+          product_id?: string
+          quantity_change?: number
+          reference_id?: string | null
+          reference_type?: string | null
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_business_profile_id_fkey"
+            columns: ["business_profile_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount_in_words: string | null
@@ -427,41 +481,71 @@ export type Database = {
       }
       products: {
         Row: {
+          barcode: string | null
+          brand: string | null
           business_profile_id: string
+          category: string | null
+          cost_price: number
           created_at: string | null
           description: string | null
           hsn_sac: string | null
           id: string
           is_active: boolean | null
+          item_type: string
           name: string
+          opening_stock: number
           quantity: number | null
           rate: number
+          reorder_level: number
+          sku: string | null
+          storage_location: string | null
+          track_inventory: boolean
           unit: string
           updated_at: string | null
         }
         Insert: {
+          barcode?: string | null
+          brand?: string | null
           business_profile_id: string
+          category?: string | null
+          cost_price?: number
           created_at?: string | null
           description?: string | null
           hsn_sac?: string | null
           id?: string
           is_active?: boolean | null
+          item_type?: string
           name: string
+          opening_stock?: number
           quantity?: number | null
           rate?: number
+          reorder_level?: number
+          sku?: string | null
+          storage_location?: string | null
+          track_inventory?: boolean
           unit?: string
           updated_at?: string | null
         }
         Update: {
+          barcode?: string | null
+          brand?: string | null
           business_profile_id?: string
+          category?: string | null
+          cost_price?: number
           created_at?: string | null
           description?: string | null
           hsn_sac?: string | null
           id?: string
           is_active?: boolean | null
+          item_type?: string
           name?: string
+          opening_stock?: number
           quantity?: number | null
           rate?: number
+          reorder_level?: number
+          sku?: string | null
+          storage_location?: string | null
+          track_inventory?: boolean
           unit?: string
           updated_at?: string | null
         }

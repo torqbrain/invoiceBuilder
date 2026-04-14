@@ -5,6 +5,7 @@ export type BusinessMember = Database["public"]["Tables"]["business_members"]["R
 export type Customer = Database["public"]["Tables"]["customers"]["Row"];
 export type Invoice = Database["public"]["Tables"]["invoices"]["Row"];
 export type InvoiceItem = Database["public"]["Tables"]["invoice_items"]["Row"];
+export type InventoryMovement = Database["public"]["Tables"]["inventory_movements"]["Row"];
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type TaxConfig = Database["public"]["Tables"]["tax_configs"]["Row"];
@@ -23,6 +24,15 @@ export interface InvoiceWithRelations extends Invoice {
 
 export interface BusinessMemberWithBusiness extends BusinessMember {
   business_profiles?: BusinessProfile | null;
+}
+
+export interface ProductWithInventory extends Product {
+  current_stock: number;
+  available_stock: number;
+  low_stock: boolean;
+  business_profiles?: {
+    name: string;
+  } | null;
 }
 
 export interface TranslationMap {

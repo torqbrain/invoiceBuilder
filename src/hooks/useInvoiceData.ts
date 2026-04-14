@@ -4,7 +4,22 @@ import type { InvoiceFormData, InvoiceStatus } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
 import { getNextInvoiceNumber as computeNextInvoiceNumber, normalizeInvoicePattern } from "@/lib/invoice-number";
 import { useBusiness } from "@/contexts/BusinessContext";
-import type { BusinessMemberWithBusiness } from "@/lib/types";
+import type { BusinessMemberWithBusiness, ProductWithInventory } from "@/lib/types";
+
+const INVENTORY_TRACKING_STATUSES: InvoiceStatus[] = ["sent", "paid", "partially_paid", "overdue"];
+
+function shouldTrackInventoryForInvoice(status: InvoiceStatus) {
+  return INVENTORY_TRACKING_STATUSES.includes(status);
+}
+
+function getCurrentStockForProduct(product: {
+  id: string;
+  opening_stock?: number | null;
+}, movementTotals: Map<string, number>) {
+  const openingStock = Number(product.opening_stock || 0);
+  const movementTotal = Number(movementTotals.get(product.id) || 0);
+  return openingStock + movementTotal;
+}
 
 export function useBusinessProfiles() {
   return useQuery({
@@ -22,16 +37,17 @@ export function useBusinessProfiles() {
   });
 }
 
-export function useCustomers() {
+export function useCustomers(options?: { businessProfileId?: string }) {
   const { activeBusinessId } = useBusiness();
+  const scopedBusinessProfileId = options?.businessProfileId ?? activeBusinessId;
   return useQuery({
-    queryKey: ["customers", activeBusinessId],
-    enabled: !!activeBusinessId,
+    queryKey: ["customers", scopedBusinessProfileId],
+    enabled: !!scopedBusinessProfileId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("customers")
         .select("*")
-        .eq("business_profile_id", activeBusinessId!)
+        .eq("business_profile_id", scopedBusinessProfileId!)
         .order("name");
       if (error) throw error;
       return data;
@@ -69,22 +85,56 @@ export function useProducts(options?: { businessProfileId?: string; activeOnly?:
     queryKey: ["products", scopedBusinessProfileId ?? "all", options?.activeOnly ?? false],
     enabled: !!scopedBusinessProfileId,
     queryFn: async () => {
-      let query = supabase
+      let productsQuery = supabase
         .from("products")
         .select("*, business_profiles(name)")
         .order("name");
 
       if (options?.activeOnly) {
-        query = query.eq("is_active", true);
+        productsQuery = productsQuery.eq("is_active", true);
       }
 
       if (scopedBusinessProfileId) {
-        query = query.eq("business_profile_id", scopedBusinessProfileId);
+        productsQuery = productsQuery.eq("business_profile_id", scopedBusinessProfileId);
       }
 
-      const { data, error } = await query;
+      const { data: products, error } = await productsQuery;
       if (error) throw error;
-      return data;
+
+      const productRows = products ?? [];
+      if (!scopedBusinessProfileId || productRows.length === 0) {
+        return productRows.map((product) => ({
+          ...product,
+          current_stock: Number(product.opening_stock || 0),
+          available_stock: Number(product.opening_stock || 0),
+          low_stock: Boolean(product.track_inventory) && Number(product.opening_stock || 0) <= Number(product.reorder_level || 0),
+        })) as ProductWithInventory[];
+      }
+
+      const { data: movements, error: movementsError } = await supabase
+        .from("inventory_movements")
+        .select("product_id, quantity_change")
+        .eq("business_profile_id", scopedBusinessProfileId);
+
+      if (movementsError) throw movementsError;
+
+      const movementTotals = (movements ?? []).reduce((map, movement) => {
+        map.set(
+          movement.product_id,
+          Number(map.get(movement.product_id) || 0) + Number(movement.quantity_change || 0)
+        );
+        return map;
+      }, new Map<string, number>());
+
+      return productRows.map((product) => {
+        const currentStock = getCurrentStockForProduct(product, movementTotals);
+        return {
+          ...product,
+          current_stock: currentStock,
+          available_stock: currentStock,
+          low_stock: Boolean(product.track_inventory) && currentStock <= Number(product.reorder_level || 0),
+        };
+      }) as ProductWithInventory[];
     },
   });
 }
@@ -142,6 +192,7 @@ export function useSaveInvoice() {
   return useMutation({
     mutationFn: async ({ formData, invoiceId }: { formData: InvoiceFormData; invoiceId?: string }) => {
       const { items, tax_ids, ...invoiceData } = formData;
+      const shouldTrackInventory = shouldTrackInventoryForInvoice(invoiceData.status);
       const invoiceItemsPayload = items.map((item, i) => ({
         invoice_id: invoiceId,
         product_id: item.product_id || null,
@@ -165,14 +216,84 @@ export function useSaveInvoice() {
         tax_details: [],
       };
 
+      const trackedProductIds = Array.from(
+        new Set(items.map((item) => item.product_id).filter(Boolean))
+      ) as string[];
+
+      let trackedProducts = new Map<string, {
+        id: string;
+        business_profile_id: string;
+        name: string;
+        item_type: string;
+        track_inventory: boolean;
+        cost_price: number;
+      }>();
+
+      if (shouldTrackInventory && trackedProductIds.length > 0) {
+        const { data: products, error: productsError } = await supabase
+          .from("products")
+          .select("id, business_profile_id, name, item_type, track_inventory, cost_price")
+          .in("id", trackedProductIds);
+
+        if (productsError) throw productsError;
+
+        trackedProducts = new Map((products ?? []).map((product) => [product.id, {
+          ...product,
+          cost_price: Number(product.cost_price || 0),
+          track_inventory: Boolean(product.track_inventory),
+        }]));
+      }
+
+      const buildInventoryMovements = (resolvedInvoiceId: string) => {
+        if (!shouldTrackInventory) return [];
+
+        const aggregatedQuantities = items.reduce((map, item) => {
+          if (!item.product_id) return map;
+
+          const product = trackedProducts.get(item.product_id);
+          if (!product || product.item_type !== "goods" || !product.track_inventory) {
+            return map;
+          }
+
+          map.set(item.product_id, Number(map.get(item.product_id) || 0) + Number(item.quantity || 0));
+          return map;
+        }, new Map<string, number>());
+
+        return Array.from(aggregatedQuantities.entries()).map(([productId, quantity]) => {
+          const product = trackedProducts.get(productId)!;
+
+          return {
+            business_profile_id: product.business_profile_id,
+            product_id: productId,
+            movement_type: "invoice_sale",
+            quantity_change: quantity * -1,
+            unit_cost: product.cost_price,
+            reference_type: "invoice",
+            reference_id: resolvedInvoiceId,
+            notes: `Stock reduced for invoice ${invoiceData.invoice_number}`,
+          };
+        });
+      };
+
       if (invoiceId) {
         const { error } = await supabase.from("invoices").update(invoicePayload).eq("id", invoiceId);
         if (error) throw error;
         // Delete old items and re-insert
         await supabase.from("invoice_items").delete().eq("invoice_id", invoiceId);
+        const { error: deleteMovementError } = await supabase
+          .from("inventory_movements")
+          .delete()
+          .eq("reference_type", "invoice")
+          .eq("reference_id", invoiceId);
+        if (deleteMovementError) throw deleteMovementError;
         if (items.length > 0) {
           const { error: itemsError } = await supabase.from("invoice_items").insert(invoiceItemsPayload);
           if (itemsError) throw itemsError;
+        }
+        const inventoryMovements = buildInventoryMovements(invoiceId);
+        if (inventoryMovements.length > 0) {
+          const { error: inventoryError } = await supabase.from("inventory_movements").insert(inventoryMovements);
+          if (inventoryError) throw inventoryError;
         }
         return invoiceId;
       } else {
@@ -188,11 +309,17 @@ export function useSaveInvoice() {
           );
           if (itemsError) throw itemsError;
         }
+        const inventoryMovements = buildInventoryMovements(data.id);
+        if (inventoryMovements.length > 0) {
+          const { error: inventoryError } = await supabase.from("inventory_movements").insert(inventoryMovements);
+          if (inventoryError) throw inventoryError;
+        }
         return data.id;
       }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invoices"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
       toast({ title: "Invoice saved successfully" });
     },
     onError: (err: Error) => {
@@ -205,11 +332,19 @@ export function useDeleteInvoice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      const { error: movementError } = await supabase
+        .from("inventory_movements")
+        .delete()
+        .eq("reference_type", "invoice")
+        .eq("reference_id", id);
+      if (movementError) throw movementError;
+
       const { error } = await supabase.from("invoices").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invoices"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
       toast({ title: "Invoice deleted" });
     },
   });
