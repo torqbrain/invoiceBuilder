@@ -18,6 +18,7 @@ import type { InvoiceFormData, InvoiceItemFormData, InvoiceStatus, Product } fro
 import { numberToWords } from "@/lib/number-to-words";
 import { COMMON_UNITS } from "@/lib/units";
 import { normalizeInvoicePattern } from "@/lib/invoice-number";
+import { getEffectiveInvoiceStatus } from "@/lib/invoice-status";
 
 const LEGACY_DEFAULT_TERMS = "1. Payment is due within 30 days.\n2. Please include invoice number in payment reference.";
 
@@ -392,7 +393,23 @@ export default function InvoiceEditor() {
             </div>
             <div>
               <Label className="text-xs">Due Date (Optional)</Label>
-              <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+              <Input
+                type="date"
+                value={form.due_date}
+                onChange={(e) => {
+                  const dueDate = e.target.value;
+                  setForm((current) => ({
+                    ...current,
+                    due_date: dueDate,
+                    status: getEffectiveInvoiceStatus(
+                      current.status,
+                      dueDate || null,
+                      Number(current.received_amount || 0),
+                      total
+                    ),
+                  }));
+                }}
+              />
             </div>
             <div>
               <Label className="text-xs">Status</Label>

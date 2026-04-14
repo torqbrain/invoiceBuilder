@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { InvoiceFormData, InvoiceStatus } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
 import { getNextInvoiceNumber as computeNextInvoiceNumber, normalizeInvoicePattern } from "@/lib/invoice-number";
+import { getEffectiveInvoiceStatus } from "@/lib/invoice-status";
 import { useBusiness } from "@/contexts/BusinessContext";
 import type { BusinessMemberWithBusiness, ProductWithInventory } from "@/lib/types";
 
@@ -156,15 +157,29 @@ export function useInvoices(statusFilter?: InvoiceStatus | null) {
     queryKey: ["invoices", activeBusinessId, statusFilter],
     enabled: !!activeBusinessId,
     queryFn: async () => {
-      let query = supabase
+      const query = supabase
         .from("invoices")
         .select("*, business_profiles(*), customers(*), currencies(*), invoice_templates(*)")
         .eq("business_profile_id", activeBusinessId!)
         .order("created_at", { ascending: false });
-      if (statusFilter) query = query.eq("status", statusFilter);
+
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      const invoices = (data ?? []).map((invoice) => ({
+        ...invoice,
+        status: getEffectiveInvoiceStatus(
+          invoice.status as InvoiceStatus,
+          invoice.due_date,
+          Number(invoice.received_amount || 0),
+          Number(invoice.total_amount || 0)
+        ),
+      }));
+
+      if (statusFilter) {
+        return invoices.filter((invoice) => invoice.status === statusFilter);
+      }
+
+      return invoices;
     },
   });
 }
@@ -182,7 +197,15 @@ export function useInvoice(id: string | undefined) {
         .eq("id", id!)
         .single();
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        status: getEffectiveInvoiceStatus(
+          data.status as InvoiceStatus,
+          data.due_date,
+          Number(data.received_amount || 0),
+          Number(data.total_amount || 0)
+        ),
+      };
     },
   });
 }
@@ -192,7 +215,13 @@ export function useSaveInvoice() {
   return useMutation({
     mutationFn: async ({ formData, invoiceId }: { formData: InvoiceFormData; invoiceId?: string }) => {
       const { items, tax_ids, ...invoiceData } = formData;
-      const shouldTrackInventory = shouldTrackInventoryForInvoice(invoiceData.status);
+      const effectiveStatus = getEffectiveInvoiceStatus(
+        invoiceData.status,
+        invoiceData.due_date,
+        Number(invoiceData.received_amount || 0),
+        Number(items.reduce((sum, item) => sum + item.amount, 0))
+      );
+      const shouldTrackInventory = shouldTrackInventoryForInvoice(effectiveStatus);
       const invoiceItemsPayload = items.map((item, i) => ({
         invoice_id: invoiceId,
         product_id: item.product_id || null,
@@ -210,6 +239,7 @@ export function useSaveInvoice() {
       
       const invoicePayload = {
         ...invoiceData,
+        status: effectiveStatus,
         subtotal,
         tax_amount: 0,
         total_amount: subtotal,

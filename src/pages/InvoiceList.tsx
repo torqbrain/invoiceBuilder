@@ -74,20 +74,26 @@ export default function InvoiceList() {
             {filtered.map((inv) => (
               <div key={inv.id} className="rounded-lg border p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="font-medium">{inv.invoice_number}</div>
+                  <div className="min-w-0">
+                    <div className="break-words font-medium">{inv.invoice_number}</div>
                     <div className="mt-1 text-sm text-muted-foreground">{(inv as any).customers?.name || "—"}</div>
                   </div>
                   <Badge variant="secondary" className={statusColors[inv.status || "draft"]}>
                     {formatInvoiceStatus(inv.status)}
                   </Badge>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="mt-4 space-y-3 text-sm">
                   <div>
-                    <div className="text-muted-foreground">Date</div>
+                    <div className="text-muted-foreground">Created Date</div>
                     <div>{new Date(inv.invoice_date).toLocaleDateString()}</div>
                   </div>
-                  <div className="text-right">
+                  {inv.due_date && (
+                    <div>
+                      <div className="text-muted-foreground">Due Date</div>
+                      <div>{new Date(inv.due_date).toLocaleDateString()}</div>
+                    </div>
+                  )}
+                  <div>
                     <div className="text-muted-foreground">Amount</div>
                     <div className="font-medium">
                       {(inv as any).currencies?.symbol || "₹"}{(inv.total_amount || 0).toLocaleString()}
@@ -110,7 +116,8 @@ export default function InvoiceList() {
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Invoice #</th>
                 <th className="text-left px-4 py-3 font-medium">Customer</th>
-                <th className="text-left px-4 py-3 font-medium">Date</th>
+                <th className="text-left px-4 py-3 font-medium">Created Date</th>
+                <th className="text-left px-4 py-3 font-medium">Due Date</th>
                 <th className="text-right px-4 py-3 font-medium">Amount</th>
                 <th className="text-center px-4 py-3 font-medium">Status</th>
                 <th className="text-right px-4 py-3 font-medium">Actions</th>
@@ -122,6 +129,7 @@ export default function InvoiceList() {
                   <td className="px-4 py-3 font-medium">{inv.invoice_number}</td>
                   <td className="px-4 py-3 text-muted-foreground">{(inv as any).customers?.name || "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">{new Date(inv.invoice_date).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "—"}</td>
                   <td className="px-4 py-3 text-right font-medium">
                     {(inv as any).currencies?.symbol || "₹"}{(inv.total_amount || 0).toLocaleString()}
                   </td>
