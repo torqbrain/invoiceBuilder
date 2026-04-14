@@ -28,47 +28,59 @@ export default function BusinessProfilesPage() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
   const qc = useQueryClient();
 
   const handleSave = async () => {
+    if (isSaving) return;
     if (!form.name.trim()) { toast({ title: "Name is required", variant: "destructive" }); return; }
-    if (editId) {
-      await supabase.from("business_profiles").update(form).eq("id", editId);
-    } else {
-      if (!user) {
-        toast({ title: "You must be signed in", variant: "destructive" });
-        return;
+    setIsSaving(true);
+    try {
+      if (editId) {
+        const { error } = await supabase.from("business_profiles").update(form).eq("id", editId);
+        if (error) {
+          toast({ title: "Unable to update business profile", description: error.message, variant: "destructive" });
+          return;
+        }
+      } else {
+        if (!user) {
+          toast({ title: "You must be signed in", variant: "destructive" });
+          return;
+        }
+
+        const { data: business, error: businessError } = await supabase
+          .from("business_profiles")
+          .insert({ ...form, owner_user_id: user.id })
+          .select("id")
+          .single();
+
+        if (businessError) {
+          toast({ title: "Unable to create business", description: businessError.message, variant: "destructive" });
+          return;
+        }
+
+        const { error: membershipError } = await supabase.from("business_members").insert({
+          user_id: user.id,
+          business_profile_id: business.id,
+          role: "owner",
+        });
+
+        if (membershipError) {
+          toast({ title: "Unable to create business membership", description: membershipError.message, variant: "destructive" });
+          return;
+        }
       }
-
-      const { data: business, error: businessError } = await supabase
-        .from("business_profiles")
-        .insert({ ...form, owner_user_id: user.id })
-        .select("id")
-        .single();
-
-      if (businessError) {
-        toast({ title: "Unable to create business", description: businessError.message, variant: "destructive" });
-        return;
-      }
-
-      const { error: membershipError } = await supabase.from("business_members").insert({
-        user_id: user.id,
-        business_profile_id: business.id,
-        role: "owner",
-      });
-
-      if (membershipError) {
-        toast({ title: "Unable to create business membership", description: membershipError.message, variant: "destructive" });
-        return;
-      }
+      qc.invalidateQueries({ queryKey: ["business_profiles"] });
+      qc.invalidateQueries({ queryKey: ["business_memberships"] });
+      setOpen(false);
+      setForm(emptyForm());
+      setEditId(null);
+      toast({ title: editId ? "Profile updated" : "Profile added" });
+    } finally {
+      setIsSaving(false);
     }
-    qc.invalidateQueries({ queryKey: ["business_profiles"] });
-    qc.invalidateQueries({ queryKey: ["business_memberships"] });
-    setOpen(false);
-    setForm(emptyForm());
-    setEditId(null);
-    toast({ title: editId ? "Profile updated" : "Profile added" });
   };
 
   const handleEdit = (p: any) => {
@@ -80,10 +92,20 @@ export default function BusinessProfilesPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (deletingId) return;
     if (!confirm("Delete this business profile?")) return;
-    await supabase.from("business_profiles").delete().eq("id", id);
-    qc.invalidateQueries({ queryKey: ["business_profiles"] });
-    toast({ title: "Profile deleted" });
+    setDeletingId(id);
+    try {
+      const { error } = await supabase.from("business_profiles").delete().eq("id", id);
+      if (error) {
+        toast({ title: "Unable to delete profile", description: error.message, variant: "destructive" });
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["business_profiles"] });
+      toast({ title: "Profile deleted" });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -169,7 +191,7 @@ export default function BusinessProfilesPage() {
                 </div>
               </div>
             </div>
-            <Button className="w-full mt-3" onClick={handleSave}>{editId ? "Update" : "Add"} Profile</Button>
+            <Button className="w-full mt-3" onClick={handleSave} disabled={isSaving}>{isSaving ? (editId ? "Updating..." : "Adding...") : (editId ? "Update" : "Add")} Profile</Button>
           </DialogContent>
         </Dialog>
       </div>
@@ -203,7 +225,7 @@ export default function BusinessProfilesPage() {
                 </div>
                 <div className="flex justify-end gap-1">
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(p)}><Edit className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)} disabled={deletingId === p.id}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               </CardContent>
             </Card>

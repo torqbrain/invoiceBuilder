@@ -54,11 +54,14 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [missingBusinessDialogOpen, setMissingBusinessDialogOpen] = useState(false);
   const [form, setForm] = useState(emptyForm());
   const [adjustmentOpen, setAdjustmentOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithInventory | null>(null);
   const [adjustmentForm, setAdjustmentForm] = useState(emptyAdjustmentForm());
+  const [isAdjustingStock, setIsAdjustingStock] = useState(false);
   const qc = useQueryClient();
 
   const filtered = useMemo(() => {
@@ -88,6 +91,7 @@ export default function ProductsPage() {
   };
 
   const handleSave = async () => {
+    if (isSaving) return;
     if (!form.business_profile_id) {
       toast({ title: "Business profile is required", variant: "destructive" });
       return;
@@ -113,20 +117,25 @@ export default function ProductsPage() {
       storage_location: form.item_type === "goods" && form.track_inventory ? (form.storage_location.trim() || null) : null,
     };
 
-    const { error } = editId
-      ? await supabase.from("products").update(payload).eq("id", editId)
-      : await supabase.from("products").insert(payload);
+    setIsSaving(true);
+    try {
+      const { error } = editId
+        ? await supabase.from("products").update(payload).eq("id", editId)
+        : await supabase.from("products").insert(payload);
 
-    if (error) {
-      toast({ title: "Unable to save product", description: error.message, variant: "destructive" });
-      return;
+      if (error) {
+        toast({ title: "Unable to save product", description: error.message, variant: "destructive" });
+        return;
+      }
+
+      qc.invalidateQueries({ queryKey: ["products"] });
+      qc.invalidateQueries({ queryKey: ["inventory_movements"] });
+      setOpen(false);
+      resetForm();
+      toast({ title: editId ? "Product updated" : "Product added" });
+    } finally {
+      setIsSaving(false);
     }
-
-    qc.invalidateQueries({ queryKey: ["products"] });
-    qc.invalidateQueries({ queryKey: ["inventory_movements"] });
-    setOpen(false);
-    resetForm();
-    toast({ title: editId ? "Product updated" : "Product added" });
   };
 
   const handleEdit = (product: ProductWithInventory) => {
@@ -155,16 +164,21 @@ export default function ProductsPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (deletingId) return;
     if (!confirm("Delete this product?")) return;
+    setDeletingId(id);
+    try {
+      const { error } = await supabase.from("products").delete().eq("id", id);
+      if (error) {
+        toast({ title: "Unable to delete product", description: error.message, variant: "destructive" });
+        return;
+      }
 
-    const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error) {
-      toast({ title: "Unable to delete product", description: error.message, variant: "destructive" });
-      return;
+      qc.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: "Product deleted" });
+    } finally {
+      setDeletingId(null);
     }
-
-    qc.invalidateQueries({ queryKey: ["products"] });
-    toast({ title: "Product deleted" });
   };
 
   const handleOpenAdjustment = (product: ProductWithInventory) => {
@@ -174,6 +188,7 @@ export default function ProductsPage() {
   };
 
   const handleAdjustStock = async () => {
+    if (isAdjustingStock) return;
     if (!selectedProduct) return;
     if (!selectedProduct.track_inventory || selectedProduct.item_type !== "goods") {
       toast({ title: "Inventory tracking is not enabled for this product", variant: "destructive" });
@@ -189,26 +204,31 @@ export default function ProductsPage() {
       ? adjustmentForm.quantity
       : adjustmentForm.quantity * -1;
 
-    const { error } = await supabase.from("inventory_movements").insert({
-      business_profile_id: selectedProduct.business_profile_id,
-      product_id: selectedProduct.id,
-      movement_type: adjustmentForm.movement_type,
-      quantity_change: quantityChange,
-      unit_cost: selectedProduct.cost_price ?? 0,
-      reference_type: "manual_adjustment",
-      notes: adjustmentForm.notes.trim() || null,
-    });
+    setIsAdjustingStock(true);
+    try {
+      const { error } = await supabase.from("inventory_movements").insert({
+        business_profile_id: selectedProduct.business_profile_id,
+        product_id: selectedProduct.id,
+        movement_type: adjustmentForm.movement_type,
+        quantity_change: quantityChange,
+        unit_cost: selectedProduct.cost_price ?? 0,
+        reference_type: "manual_adjustment",
+        notes: adjustmentForm.notes.trim() || null,
+      });
 
-    if (error) {
-      toast({ title: "Unable to adjust stock", description: error.message, variant: "destructive" });
-      return;
+      if (error) {
+        toast({ title: "Unable to adjust stock", description: error.message, variant: "destructive" });
+        return;
+      }
+
+      qc.invalidateQueries({ queryKey: ["products"] });
+      setAdjustmentOpen(false);
+      setSelectedProduct(null);
+      setAdjustmentForm(emptyAdjustmentForm());
+      toast({ title: "Stock adjusted" });
+    } finally {
+      setIsAdjustingStock(false);
     }
-
-    qc.invalidateQueries({ queryKey: ["products"] });
-    setAdjustmentOpen(false);
-    setSelectedProduct(null);
-    setAdjustmentForm(emptyAdjustmentForm());
-    toast({ title: "Stock adjusted" });
   };
 
   return (
@@ -451,8 +471,8 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            <Button className="w-full mt-3" onClick={handleSave}>
-              {editId ? "Update" : "Add"} Product
+            <Button className="w-full mt-3" onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (editId ? "Updating..." : "Adding...") : (editId ? "Update" : "Add")} Product
             </Button>
           </DialogContent>
         </Dialog>
@@ -539,7 +559,7 @@ export default function ProductsPage() {
               />
             </div>
 
-            <Button className="w-full" onClick={handleAdjustStock}>Save Adjustment</Button>
+            <Button className="w-full" onClick={handleAdjustStock} disabled={isAdjustingStock}>{isAdjustingStock ? "Saving..." : "Save Adjustment"}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -597,9 +617,9 @@ export default function ProductsPage() {
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)} disabled={deletingId === product.id}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                 </div>
               </CardContent>
             </Card>

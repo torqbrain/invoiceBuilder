@@ -17,6 +17,8 @@ export default function CustomersPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", address_line1: "", city: "", state: "", country: "", postal_code: "", gstin: "", pan: "", contact_person: "" });
   const qc = useQueryClient();
 
@@ -25,17 +27,28 @@ export default function CustomersPage() {
   const resetForm = () => { setForm({ name: "", email: "", phone: "", address_line1: "", city: "", state: "", country: "", postal_code: "", gstin: "", pan: "", contact_person: "" }); setEditId(null); };
 
   const handleSave = async () => {
+    if (isSaving) return;
     if (!activeBusinessId) { toast({ title: "Select a business first", variant: "destructive" }); return; }
     if (!form.name.trim()) { toast({ title: "Name is required", variant: "destructive" }); return; }
-    if (editId) {
-      await supabase.from("customers").update(form).eq("id", editId);
-    } else {
-      await supabase.from("customers").insert({ ...form, business_profile_id: activeBusinessId });
+    setIsSaving(true);
+    const mode = editId ? "update" : "create";
+    try {
+      const { error } = editId
+        ? await supabase.from("customers").update(form).eq("id", editId)
+        : await supabase.from("customers").insert({ ...form, business_profile_id: activeBusinessId });
+
+      if (error) {
+        toast({ title: `Unable to ${mode} customer`, description: error.message, variant: "destructive" });
+        return;
+      }
+
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      setOpen(false);
+      resetForm();
+      toast({ title: editId ? "Customer updated" : "Customer added" });
+    } finally {
+      setIsSaving(false);
     }
-    qc.invalidateQueries({ queryKey: ["customers"] });
-    setOpen(false);
-    resetForm();
-    toast({ title: editId ? "Customer updated" : "Customer added" });
   };
 
   const handleEdit = (c: any) => {
@@ -45,10 +58,20 @@ export default function CustomersPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (deletingId) return;
     if (!confirm("Delete this customer?")) return;
-    await supabase.from("customers").delete().eq("id", id);
-    qc.invalidateQueries({ queryKey: ["customers"] });
-    toast({ title: "Customer deleted" });
+    setDeletingId(id);
+    try {
+      const { error } = await supabase.from("customers").delete().eq("id", id);
+      if (error) {
+        toast({ title: "Unable to delete customer", description: error.message, variant: "destructive" });
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      toast({ title: "Customer deleted" });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -77,7 +100,7 @@ export default function CustomersPage() {
               <div><Label className="text-xs">PAN</Label><Input placeholder="ABCDE1234F" value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value })} /></div>
               <div className="col-span-2"><Label className="text-xs">Contact Person</Label><Input placeholder="TorqBrain Accounts Team" value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })} /></div>
             </div>
-            <Button className="w-full mt-3" onClick={handleSave}>{editId ? "Update" : "Add"} Customer</Button>
+            <Button className="w-full mt-3" onClick={handleSave} disabled={isSaving}>{isSaving ? (editId ? "Updating..." : "Adding...") : (editId ? "Update" : "Add")} Customer</Button>
           </DialogContent>
         </Dialog>
       </div>
@@ -99,7 +122,7 @@ export default function CustomersPage() {
                 </div>
                 <div className="flex justify-end gap-1">
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(c)}><Edit className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)} disabled={deletingId === c.id}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               </CardContent>
             </Card>
