@@ -310,7 +310,7 @@ export default function InvoiceEditor() {
 
   const handleSave = async (status?: InvoiceStatus) => {
     if (saveMutation.isPending) return;
-    const resolvedStatus = status || form.status;
+    const resolvedStatus = status || (form.status === "draft" ? "sent" : form.status);
     const data = {
       ...form,
       due_date: form.due_date || null,
@@ -367,7 +367,7 @@ export default function InvoiceEditor() {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant="outline" onClick={() => handleSave("draft")} className="w-full sm:w-auto" disabled={saveMutation.isPending}><Save className="h-4 w-4 mr-2" />{saveMutation.isPending ? "Saving..." : "Save Draft"}</Button>
-          <Button onClick={() => handleSave()} className="w-full sm:w-auto" disabled={saveMutation.isPending}><Eye className="h-4 w-4 mr-2" />{saveMutation.isPending ? "Saving..." : "Save & Preview"}</Button>
+          <Button onClick={() => handleSave()} className="w-full sm:w-auto" disabled={saveMutation.isPending}><Eye className="h-4 w-4 mr-2" />{saveMutation.isPending ? "Generating..." : "Generate & Preview"}</Button>
         </div>
       </div>
 
