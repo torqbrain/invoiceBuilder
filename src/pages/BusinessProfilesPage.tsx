@@ -100,24 +100,24 @@ export default function BusinessProfilesPage() {
           <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editId ? "Edit" : "Add"} Business Profile</DialogTitle></DialogHeader>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="col-span-2"><Label className="text-xs">Company Name *</Label><Input placeholder="HR IT Services Pvt Ltd" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">Address Line 1</Label><Input placeholder="402, Shivalik Heights" value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">Address Line 2</Label><Input placeholder="Near Commerce Six Roads" value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Company Name *</Label><Input placeholder="TorqBrain" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Address Line 1</Label><Input placeholder="311, Town Plazza, Nikol" value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Address Line 2</Label><Input placeholder="Near Nikol Circle" value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} /></div>
               <div><Label className="text-xs">City</Label><Input placeholder="Ahmedabad" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
               <div><Label className="text-xs">State</Label><Input placeholder="Gujarat" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
               <div><Label className="text-xs">Country</Label><Input placeholder="India" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} /></div>
-              <div><Label className="text-xs">Postal Code</Label><Input placeholder="380009" value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></div>
-              <div><Label className="text-xs">Phone</Label><Input placeholder="+91 98765 43210" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-              <div><Label className="text-xs">Email</Label><Input placeholder="billing@yourcompany.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">Website</Label><Input placeholder="https://www.yourcompany.com" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
-              <div><Label className="text-xs">GSTIN</Label><Input placeholder="24BRGPA5729L1Z8" value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value })} /></div>
-              <div><Label className="text-xs">PAN</Label><Input placeholder="BRGPA5729L" value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">LUT ARN</Label><Input placeholder="AD2404260152695" value={form.lut_arn} onChange={(e) => setForm({ ...form, lut_arn: e.target.value })} /></div>
+              <div><Label className="text-xs">Postal Code</Label><Input placeholder="380049" value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></div>
+              <div><Label className="text-xs">Phone</Label><Input placeholder="+91-79355-45399" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+              <div><Label className="text-xs">Email</Label><Input placeholder="contact@torqbrain.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Website</Label><Input placeholder="https://www.torqbrain.com" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
+              <div><Label className="text-xs">GSTIN</Label><Input placeholder="24ABCDE1234F1Z9" value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value })} /></div>
+              <div><Label className="text-xs">PAN</Label><Input placeholder="ABCDE1234F" value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">LUT ARN</Label><Input placeholder="AD1234567890123" value={form.lut_arn} onChange={(e) => setForm({ ...form, lut_arn: e.target.value })} /></div>
               <div className="col-span-2 font-medium text-sm mt-2">Bank Details</div>
-              <div><Label className="text-xs">Bank Name</Label><Input placeholder="HDFC Bank" value={form.bank_name} onChange={(e) => setForm({ ...form, bank_name: e.target.value })} /></div>
-              <div><Label className="text-xs">Account No.</Label><Input placeholder="50100234567890" value={form.bank_account} onChange={(e) => setForm({ ...form, bank_account: e.target.value })} /></div>
-              <div><Label className="text-xs">IFSC</Label><Input placeholder="HDFC0001234" value={form.bank_ifsc} onChange={(e) => setForm({ ...form, bank_ifsc: e.target.value })} /></div>
-              <div><Label className="text-xs">SWIFT</Label><Input placeholder="HDFCINBBXXX" value={form.bank_swift} onChange={(e) => setForm({ ...form, bank_swift: e.target.value })} /></div>
+              <div><Label className="text-xs">Bank Name</Label><Input placeholder="Axis Bank" value={form.bank_name} onChange={(e) => setForm({ ...form, bank_name: e.target.value })} /></div>
+              <div><Label className="text-xs">Account No.</Label><Input placeholder="918273645500123" value={form.bank_account} onChange={(e) => setForm({ ...form, bank_account: e.target.value })} /></div>
+              <div><Label className="text-xs">IFSC</Label><Input placeholder="UTIB0000456" value={form.bank_ifsc} onChange={(e) => setForm({ ...form, bank_ifsc: e.target.value })} /></div>
+              <div><Label className="text-xs">SWIFT</Label><Input placeholder="AXISINBB456" value={form.bank_swift} onChange={(e) => setForm({ ...form, bank_swift: e.target.value })} /></div>
               <div className="col-span-2 font-medium text-sm mt-2">Invoice Defaults</div>
               <div className="col-span-2">
                 <Label className="text-xs">Invoice Number Pattern</Label>
@@ -142,7 +142,7 @@ export default function BusinessProfilesPage() {
                 <Input
                   value={form.signature_text}
                   onChange={(e) => setForm({ ...form, signature_text: e.target.value })}
-                  placeholder="e.g. Harsh Angrajpara"
+                  placeholder="e.g. TorqBrain Authorized Signatory"
                 />
               </div>
               <div className="col-span-2 space-y-2">

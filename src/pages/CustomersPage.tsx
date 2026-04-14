@@ -65,17 +65,17 @@ export default function CustomersPage() {
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{editId ? "Edit" : "Add"} Customer</DialogTitle></DialogHeader>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="col-span-2"><Label className="text-xs">Name *</Label><Input placeholder="Red Thread Innovations Inc" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-              <div><Label className="text-xs">Email</Label><Input placeholder="accounts@client.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              <div><Label className="text-xs">Phone</Label><Input placeholder="+1 416 555 0123" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">Address</Label><Input placeholder="123 King Street West" value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} /></div>
-              <div><Label className="text-xs">City</Label><Input placeholder="Toronto" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
-              <div><Label className="text-xs">State</Label><Input placeholder="Ontario" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
-              <div><Label className="text-xs">Country</Label><Input placeholder="Canada" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} /></div>
-              <div><Label className="text-xs">Postal Code</Label><Input placeholder="M5V 1L7" value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></div>
-              <div><Label className="text-xs">GSTIN</Label><Input placeholder="24BRGPA5729L1Z8" value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value })} /></div>
-              <div><Label className="text-xs">PAN</Label><Input placeholder="BRGPA5729L" value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value })} /></div>
-              <div className="col-span-2"><Label className="text-xs">Contact Person</Label><Input placeholder="Seema Patel" value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Name *</Label><Input placeholder="TorqBrain Technologies Pvt Ltd" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+              <div><Label className="text-xs">Email</Label><Input placeholder="contact@torqbrain.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+              <div><Label className="text-xs">Phone</Label><Input placeholder="+91-79355-45399" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Address</Label><Input placeholder="311, Town Plazza, Nikol" value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} /></div>
+              <div><Label className="text-xs">City</Label><Input placeholder="Ahmedabad" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
+              <div><Label className="text-xs">State</Label><Input placeholder="Gujarat" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
+              <div><Label className="text-xs">Country</Label><Input placeholder="India" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} /></div>
+              <div><Label className="text-xs">Postal Code</Label><Input placeholder="380049" value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} /></div>
+              <div><Label className="text-xs">GSTIN</Label><Input placeholder="24ABCDE1234F1Z9" value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value })} /></div>
+              <div><Label className="text-xs">PAN</Label><Input placeholder="ABCDE1234F" value={form.pan} onChange={(e) => setForm({ ...form, pan: e.target.value })} /></div>
+              <div className="col-span-2"><Label className="text-xs">Contact Person</Label><Input placeholder="TorqBrain Accounts Team" value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })} /></div>
             </div>
             <Button className="w-full mt-3" onClick={handleSave}>{editId ? "Update" : "Add"} Customer</Button>
           </DialogContent>
