@@ -1,0 +1,82 @@
+Terms and Conditions
+
+Last updated: April 14, 2026
+
+These Terms and Conditions govern access to and use of InvoiceHub, developed by TorqBrain. By using the application, you agree to these terms.
+
+1. Use of the Service
+
+InvoiceHub is provided as a business invoicing and record-management application. Users may use the application only for lawful purposes and in compliance with applicable laws and regulations.
+
+2. User Accounts
+
+Users are responsible for:
+
+- providing accurate account information;
+- maintaining the security of their account credentials;
+- all activity carried out through their account.
+
+TorqBrain may suspend or terminate access if misuse, abuse, fraud, or unauthorized activity is detected.
+
+3. User Data
+
+Users are responsible for all business, customer, invoice, product, inventory, and payment information entered into the application. Users must ensure they have the legal right to collect, store, and process such data.
+
+4. Acceptable Use
+
+Users must not:
+
+- use the service for unlawful, harmful, deceptive, or fraudulent activity;
+- attempt to gain unauthorized access to the application, its infrastructure, or other users' data;
+- interfere with or disrupt the service;
+- upload malicious code, malware, or harmful content;
+- use the service to violate tax, privacy, or consumer protection laws.
+
+5. Availability
+
+We aim to keep the application available and reliable, but we do not guarantee uninterrupted or error-free operation. Features may change, be improved, suspended, or discontinued at any time.
+
+6. Third-Party Services
+
+The application may rely on third-party providers, including authentication, database, storage, and hosting services. TorqBrain is not responsible for outages or failures caused by third-party services outside our reasonable control.
+
+7. Intellectual Property
+
+The application, including its branding, software, interface, and supporting materials, remains the property of TorqBrain unless otherwise stated. Users retain ownership of the data they create and upload.
+
+8. Fees and Billing
+
+If paid plans are introduced, pricing, billing terms, renewals, and cancellation terms will be communicated separately or incorporated into updated terms.
+
+9. No Legal or Tax Advice
+
+InvoiceHub is a software tool and does not provide legal, financial, accounting, or tax advice. Users are solely responsible for reviewing invoices, tax treatment, compliance obligations, and business records before use or distribution.
+
+10. Limitation of Liability
+
+To the maximum extent permitted by law, TorqBrain shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or for loss of profits, revenue, data, goodwill, or business opportunities arising from use of the application.
+
+11. Disclaimer
+
+The application is provided on an "as is" and "as available" basis without warranties of any kind, whether express or implied, including merchantability, fitness for a particular purpose, and non-infringement.
+
+12. Termination
+
+We may suspend or terminate access to the service at any time if these terms are violated or if continued access creates legal, operational, or security risk.
+
+13. Governing Law
+
+These Terms shall be governed by and interpreted in accordance with applicable laws of India, unless another jurisdiction is required by law or agreed in writing.
+
+14. Changes to Terms
+
+We may update these Terms and Conditions from time to time. Continued use of the service after updates become effective constitutes acceptance of the revised terms.
+
+15. Contact
+
+For questions regarding these Terms and Conditions, contact:
+
+TorqBrain
+Email: contact@torqbrain.com
+
+This document is provided as a general template and may require review by a qualified legal professional before production use.

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Chrome } from "lucide-react";
+import AppFooter from "@/components/AppFooter";
 
 export default function AuthPage() {
   const { user, isLoading } = useAuth();
@@ -27,22 +28,25 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Welcome</CardTitle>
-          <CardDescription>Continue with Google to access your businesses and invoices.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button className="w-full" onClick={handleGoogleSignIn}>
-            <Chrome className="h-4 w-4 mr-2" />
-            Continue with Google
-          </Button>
-          <p className="text-xs text-center text-muted-foreground">
-            Email and password login is intentionally hidden for now until custom SMTP or confirmation settings are finalized.
-          </p>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-background px-4 py-8">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center gap-6">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Welcome</CardTitle>
+            <CardDescription>Continue with Google to access your businesses and invoices.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button className="w-full" onClick={handleGoogleSignIn}>
+              <Chrome className="h-4 w-4 mr-2" />
+              Continue with Google
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Email and password login is intentionally hidden for now until custom SMTP or confirmation settings are finalized.
+            </p>
+          </CardContent>
+        </Card>
+        <AppFooter />
+      </div>
     </div>
   );
 }

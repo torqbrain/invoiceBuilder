@@ -18,6 +18,8 @@ import TaxSettingsPage from "@/pages/TaxSettingsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AuthPage from "@/pages/AuthPage";
 import NotFound from "@/pages/NotFound";
+import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
+import TermsAndConditionsPage from "@/pages/TermsAndConditionsPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,8 @@ function ProtectedApp() {
   if (!user) {
     return (
       <Routes>
+        <Route path="/privacypolicy" element={<PrivacyPolicyPage />} />
+        <Route path="/termsandconditions" element={<TermsAndConditionsPage />} />
         <Route path="*" element={<AuthPage />} />
       </Routes>
     );
@@ -41,6 +45,8 @@ function ProtectedApp() {
       <AppLayout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/privacypolicy" element={<PrivacyPolicyPage />} />
+          <Route path="/termsandconditions" element={<TermsAndConditionsPage />} />
           <Route path="/invoices" element={<InvoiceList />} />
           <Route path="/invoices/new" element={<InvoiceEditor />} />
           <Route path="/invoices/:id/edit" element={<InvoiceEditor />} />

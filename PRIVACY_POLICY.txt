@@ -1,0 +1,83 @@
+Privacy Policy
+
+Last updated: April 14, 2026
+
+This Privacy Policy explains how InvoiceHub, developed by TorqBrain, collects, uses, stores, and protects information when users access and use the application.
+
+1. Information We Collect
+
+We may collect and store the following categories of information:
+
+- Account information, such as name, email address, and authentication details provided through Supabase Auth or Google Sign-In.
+- Business information, such as company name, address, tax identifiers, bank details, invoice numbering preferences, signature text, and branding details.
+- Customer information, such as customer names, contact details, addresses, and tax information entered by users.
+- Product and inventory information, such as product names, SKUs, prices, quantities, stock adjustments, and business mappings.
+- Invoice information, such as invoice numbers, invoice dates, due dates, line items, amounts, notes, payment status, and received amounts.
+- Technical information, such as browser type, device information, IP address, usage activity, and application error logs where available.
+
+2. How We Use Information
+
+We use collected information to:
+
+- provide and operate the InvoiceHub application;
+- authenticate users and secure access to data;
+- create, manage, preview, and store invoices;
+- maintain business, customer, product, and inventory records;
+- improve app performance, usability, and reliability;
+- respond to support requests and user inquiries;
+- comply with legal obligations where required.
+
+3. Data Ownership
+
+Users retain ownership of the business and customer data they enter into the application. TorqBrain does not claim ownership over invoice, customer, business, or inventory records created by users.
+
+4. Data Storage and Processing
+
+Application data may be processed and stored using third-party infrastructure and services, including Supabase and hosting providers such as Netlify. By using the application, users acknowledge that their data may be processed through these service providers.
+
+5. Authentication and Security
+
+We use authentication and access-control measures intended to prevent unauthorized access. While reasonable efforts are made to protect information, no system can guarantee absolute security.
+
+Users are responsible for:
+
+- maintaining the confidentiality of their login credentials;
+- limiting access to their devices and accounts;
+- promptly notifying us if they believe their account has been compromised.
+
+6. Sharing of Information
+
+We do not sell personal data. Information may be shared only:
+
+- with infrastructure and service providers needed to operate the application;
+- when required by law, regulation, or lawful request;
+- to protect the rights, property, or safety of users, TorqBrain, or the public.
+
+7. Data Retention
+
+We retain information for as long as necessary to provide the service, comply with legal obligations, resolve disputes, and enforce agreements, unless deletion is requested and legally permitted.
+
+8. User Responsibilities
+
+Users are responsible for ensuring they have appropriate rights and legal basis to enter and process customer, invoice, employee, or tax-related data within the application.
+
+9. Third-Party Services
+
+The application may rely on third-party services for hosting, authentication, storage, analytics, and infrastructure. Their handling of data is governed by their own terms and privacy policies.
+
+10. Children's Privacy
+
+The application is not intended for children under 13 years of age, and we do not knowingly collect personal information from children.
+
+11. Changes to This Policy
+
+We may update this Privacy Policy from time to time. Updated versions will be posted with a revised effective date.
+
+12. Contact
+
+If you have questions about this Privacy Policy, you may contact:
+
+TorqBrain
+Email: contact@torqbrain.com
+
+This document is provided as a general template and may require review by a qualified legal professional before production use.
